@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- remise au propre du package initialement developé par mohamed al glawi (alias momo)-->
+<package format="2">
+  <name>robot</name>
+  <version>0.0.2023</version>
+  <description>package du robot de valrobotik pour la coupe de france de robotique</description>
+  <!-- dans le cas ou la continuité n'est pas assuré corectement ne pas hesitez à me contacté-->
+  <maintainer email="paul.giroux87@gmail.com">paul</maintainer>
+  <license>NO License</license>
+
+  <!-- le code est réaliser sous ROS noetic catkin seras utilisé pour la compilation -->
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <!-- on utilisera roscpp et rospy pour les code en c++ et en python ainsi que 
+      std_msgs pour avoirs acces au format standart de messages-->
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+
+  <export>
+    <!-- no exportation -->
+  </export>
+</package>

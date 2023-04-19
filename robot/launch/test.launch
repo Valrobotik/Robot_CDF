@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="robot" name="serialCon" type="serialComunication.py"></node>
+    <node pkg="robot" name="test_node" type="test_node.py"></node>
+</launch>
