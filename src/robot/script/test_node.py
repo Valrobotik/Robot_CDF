@@ -14,6 +14,7 @@ class sendConsign(Thread):
     def run(self):
         while True:
             consPub.publish(Twist(Vector3(0.5,0,0), Vector3(0,0,3)))
+            rospy.sleep(1)
 
 rospy.init_node("test_node")
 consPub = rospy.Publisher('robot_consign', Twist, queue_size=10)

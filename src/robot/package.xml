@@ -5,7 +5,7 @@
   <version>0.0.2023</version>
   <description>package du robot de valrobotik pour la coupe de france de robotique</description>
   <!-- dans le cas ou la continuité n'est pas assuré corectement ne pas hesitez à me contacté-->
-  <maintainer email="paul.giroux87@gmail.com">paul</maintainer>
+  <maintainer email="valrobotik@gmail.com">Team Valrobotik</maintainer>
   <license>NO License</license>
 
   <!-- le code est réaliser sous ROS noetic catkin seras utilisé pour la compilation -->
