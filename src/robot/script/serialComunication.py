@@ -28,12 +28,12 @@ class getVitThread(Thread):
 
     def getVitesse(self):
         resp = self.__serial.sendWithResponse("M404 \n") # on envoie la commande M404 de recuperation des encodeurs
-        if resp == None : resp = "enc=(-1;-1)" # si la communication echoue on renvoie la valeur par defaut   
+        if resp == None : resp = "R=(-1;-1)" # si la communication echoue on renvoie la valeur par defaut   
         return resp 
 
     def handle_encoders(self, req):
         strData = self.getVitesse()  # on recupere la reponse du robot en string
-        data = strData.replace('enc=(', '').replace(')', '').split(';') # on la transforme en tableau de float
+        data = strData.replace('R=(', '').replace(')', '').split(';') # on la transforme en tableau de float
         return encodersResponse(float(data[0]),float(data[1]))  
 
 
