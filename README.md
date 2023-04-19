@@ -3,12 +3,15 @@ Ce pakage est une verssion comenté du robot de la coupe de france merci de le g
 
 ### LISTE DES NEUDS :
 - ```serialCon``` situé dans le fichier : script/serialComunication.py
+- ```imu_driver``` situé dans le fichier : script/serialComunication.py
 
 ### LISTE DES PUBLISHER/SUBSCRIBER :
 - ```robot_consign``` type : Twist
   - subscribe (serialCon -> setVitConsigneThread.sendConsign())
 - ```server_req``` type : String
-  -  subscribe (serialCon -> requestMotorThread.sendReq)
+  - subscribe (serialCon -> requestMotorThread.sendReq())
+- ```imu_data``` type : Imu
+  - publish (imu_driver -> IMU)
 
 ### LISTE DES SERVICES :
 - ```encoders``` type : encoders
