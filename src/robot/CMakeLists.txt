@@ -162,6 +162,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   script/serialComunication.py
   script/test_node.py
+  script/imu.py
 #  scripts/BMI160_i2c/__init__.py
 #  scripts/BMI160_i2c/commands.py
 #  scripts/BMI160_i2c/definitions.py
