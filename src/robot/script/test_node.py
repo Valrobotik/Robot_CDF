@@ -6,6 +6,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist, Vector3
+from robot.srv import encoders, encodersResponse
 from threading import Thread
 import time
 
@@ -21,12 +22,7 @@ class sendConsign(Thread):
             self.__position += 0.001*x*(time.time()-dt)
             self.__angle += 0.001*a*(time.time()-dt)
             dt = time.time()
-            position_pub.publish(Twist(Vector3(self.__position,0,0), Vector3(0,0,self.__angle)))
-            if self.__position < 1:
-                consPub.publish(Twist(Vector3(0.5,0,0), Vector3(0,0,3)))
-            else :
-                consPub.publish(Twist(Vector3(0,0,0), Vector3(0,0,0)))
-            rospy.sleep(1)
+            position_pub.publish(Twist(Vector3(self.__position,0,x), Vector3(a,0,self.__angle)))
 
 
 def encoders_client():
@@ -38,10 +34,10 @@ def encoders_client():
 
 rospy.init_node("test_node")
 consPub = rospy.Publisher('robot_consign', Twist, queue_size=10)
+test = sendConsign()
+
+rospy.Subscriber("robot_consign", Twist, test.run)
 
 position_pub = rospy.Publisher('pos', Twist, queue_size=10)
-
-test = sendConsign()
-test.start()
 
 rospy.spin()

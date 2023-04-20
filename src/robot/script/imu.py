@@ -10,13 +10,13 @@ from BMI160_i2c import Driver
 
 class IMU():
     def __init__(self) -> None:
-        __adresse = 0x69 #adresse de l'IMU
-        __freq = 100    #frequence de publication des donnees
-        __sensor = Driver(__adresse) #initialisation de l'IMU
+        self.__adresse = 0x69 #adresse de l'IMU
+        self.__freq = 100    #frequence de publication des donnees
+        self.__sensor = Driver(self.__adresse) #initialisation de l'IMU
     
     def run(self):
         while rospy.is_shutdown() == False: #boucle de publication des donnees tant que le noeud n'est pas arrete
-            data = self.__sensor.get_data() #recuperation des donnees
+            data = self.__sensor.getMotion6() #recuperation des donnees
             publisher.publish(Twist(Vector3(data[3],data[4],data[5]), Vector3(data[0],data[1],data[2]))) #publication des donnees
             rospy.sleep(1/self.__freq) #attente de la frequence de publication
 

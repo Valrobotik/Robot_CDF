@@ -20,12 +20,13 @@ class getVitThread(Thread):
     def __init__(self, serial):
         Thread.__init__(self) # appel du constructeur du thread pour le lancer
         self.__serial = serial # on recupere l'objet de communication serie du robot
+        self.__publish = rospy.Publisher('encoders', encoders, queue_size=10) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders # on attend les requetes
         return
+    
     def run(self):
-        
-        rospy.Service('encoders', encoders, self.handle_encoders) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders
-        rospy.spin() # on attend les requetes
-
+        while rospy.is_shutdown() == False:
+            self.handle_encoders(1) # on traite les requetes
+            
     def getVitesse(self):
         resp = self.__serial.sendWithResponse("M404 \n") # on envoie la commande M404 de recuperation des encodeurs
         if resp == None : resp = "R=(-1;-1)" # si la communication echoue on renvoie la valeur par defaut   
@@ -34,8 +35,7 @@ class getVitThread(Thread):
     def handle_encoders(self, req):
         strData = self.getVitesse()  # on recupere la reponse du robot en string
         data = strData.replace('R=(', '').replace(')', '').split(';') # on la transforme en tableau de float
-        return encodersResponse(float(data[0]),float(data[1]))  
-
+        self.__publish.publish(float(data[0]), float(data[1])) # on publie les donnees sur le topic encoders
 
 class setVitConsignThread(Thread):
     def __init__(self, serial):
