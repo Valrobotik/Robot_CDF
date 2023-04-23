@@ -35,7 +35,7 @@ class getVitThread(Thread):
     def handle_encoders(self, req):
         strData = self.getVitesse()  # on recupere la reponse du robot en string
         data = strData.replace('R=(', '').replace(')', '').split(';') # on la transforme en tableau de float
-        self.__publish.publish(float(data[0]), float(data[1])) # on publie les donnees sur le topic encoders
+        self.__publish.publish(Vector3(float(data[0]), float(data[1]), 0)) # on publie les donnees sur le topic encoders
 
 class setVitConsignThread(Thread):
     def __init__(self, serial):
@@ -123,7 +123,6 @@ class MotSerial(serial.Serial):
         while not sended: # tant que la commande n'a pas ete envoyee
             if (not self.busy()): # on verifie que le port serie n'est pas bloque 
                 self.setBusy() # on bloque le port serie pour eviter les conflits
-                time.sleep(0.01) # on attend un peut **(pourquoi ici ?)**
                 self.write(gcode.encode("utf8")) # on envoie la commande recu en parametre
                 print(gcode) # on affiche la commande dans la console pour debug
                 sended = True   # on indique que la commande a ete envoyee
@@ -140,7 +139,6 @@ class MotSerial(serial.Serial):
                 sended = True  # on indique que la commande a ete envoyee
                 getit = True    # on initialise la variable qui permet de savoir si la reponse a ete recu
                 getime = time.time() # on recupere le temps actuel pour eviter les boucles infinies (Timeout)
-                time.sleep(0.01) # on attend un peut pour laisser le temps au robot de repondre
                 #reccuperation de la valeur de retour
                 while getit and (time.time() - getime) < 0.1: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
                     sr = None # on initialise la variable qui contiendra la reponse

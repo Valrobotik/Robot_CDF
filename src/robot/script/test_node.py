@@ -25,12 +25,8 @@ class sendConsign(Thread):
             position_pub.publish(Twist(Vector3(self.__position,0,x), Vector3(a,0,self.__angle)))
 
 
-def encoders_client():
-    rospy.wait_for_service('encoders')
-    get_encoders = rospy.ServiceProxy('encoders', encoders)
-    cmd = 1
-    rep = get_encoders(cmd)
-    return (rep.left, rep.right)
+def encoders_client(get_encoders):
+    return (get_encoders().x, get_encoders().y)
 
 rospy.init_node("test_node")
 consPub = rospy.Publisher('robot_consign', Twist, queue_size=10)
