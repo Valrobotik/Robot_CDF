@@ -12,18 +12,26 @@ from threading import Thread
 from geometry_msgs.msg import Twist, Vector3
 import time
 from std_msgs.msg import String
+from math import cos, sin
 
     
 
-#thread qui permet de gerer les requetes de vitesse des encodeurs du robot
+#Thread qui permet de gerer la reception des donnees en vitesse des encodeurs et de les publier sur le topic encoders_speed
+#permet aussi le calcule des donnees en position des encodeurs et de les publier sur le topic encoders_position
 class getVitThread(Thread):
     def __init__(self, serial):
         Thread.__init__(self) # appel du constructeur du thread pour le lancer
         self.__serial = serial # on recupere l'objet de communication serie du robot
-        self.__publish = rospy.Publisher('encoders', encoders, queue_size=10) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders # on attend les requetes
+        self.__publish_vitesse = rospy.Publisher('encoders_speed', Vector3, queue_size=10) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders # on attend les requetes
+        self.__publish_position = rospy.Publisher('encoders_position', Vector3, queue_size=10) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders # on attend les requetes
+        self.theta = 0
+        self.x = 0
+        self.y = 0
+        self.last_time = time.time()
         return
     
     def run(self):
+        self.last_time = time.time()
         while rospy.is_shutdown() == False:
             self.handle_encoders(1) # on traite les requetes
             
@@ -35,8 +43,14 @@ class getVitThread(Thread):
     def handle_encoders(self, req):
         strData = self.getVitesse()  # on recupere la reponse du robot en string
         data = strData.replace('R=(', '').replace(')', '').split(';') # on la transforme en tableau de float
-        self.__publish.publish(Vector3(float(data[0]), float(data[1]), 0)) # on publie les donnees sur le topic encoders
-
+        self.v = float(data[0]) # on recupere la vitesse linaire des encodeurs
+        self.w = float(data[1]) # on recupere la vitesse angulaire des encodeurs
+        self.theta += self.w*(time.time() - self.last_time) # on calcule l'angle
+        self.x = self.x + self.v*(time.time() - self.last_time)*cos(self.theta) # on calcule la position x
+        self.y = self.y + self.v*(time.time() - self.last_time)*sin(self.theta) # on calcule la position y
+        self.__publish_vitesse.publish(Vector3(float(data[0]), float(data[1]), 0)) # on publie les donnees en vitesse sur le topic encoders_speed
+        self.__publish_position.publish(Vector3(self.x, self.y, self.theta)) # on publie les donnees en position sur le topic encoders_position
+        
 class setVitConsignThread(Thread):
     def __init__(self, serial):
         Thread.__init__(self)

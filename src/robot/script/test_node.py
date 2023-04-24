@@ -18,12 +18,9 @@ class sendConsign(Thread):
     def run(self):
         dt = time.time()
         while rospy.is_shutdown() == False:
-            x, a = encoders_client()
-            self.__position += 0.001*x*(time.time()-dt)
-            self.__angle += 0.001*a*(time.time()-dt)
-            dt = time.time()
+            
             position_pub.publish(Twist(Vector3(self.__position,0,x), Vector3(a,0,self.__angle)))
-
+    
 
 def encoders_client(get_encoders):
     return (get_encoders().x, get_encoders().y)
