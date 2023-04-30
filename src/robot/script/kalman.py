@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+import rospy
+import time
+import json
+from threading import Thread
+from robot.srv import encoders, encodersResponse
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
+import tf
+import sys
+import math
+from tf.transformations import quaternion_from_euler
+
+#lecture fichier de config
+
+
+class kalmanProcess():
+    def __init__(self):
+        
+        self.__d = 274.4
+        self.__r = 32
+        self.__tpr = 1000
+        self.__lastTime = 0
+        self.__currentTime = 0
+        self.__localVelocity = [-1, -1] #(vx, w)
+        self.__lastlocalVelocity = [0, 0]
+        self.__position = [0, 0, 0] #(x, y, theta)
+        self.__maxTicks = 65535
+        self.__maxSafeTicks = 500
+            
+    def start(self):
+        self.__lastTime = rospy.Time.now()
+        dt = 0
+        while(rospy.is_shutdown() == False):
+            data = encoders_client() #on récupère les données des encodeurs
+            self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
+            self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
+            
+            #temps actuel
+            self.__currentTime = rospy.Time.now()
+            
+            #calcul de dt
+            dt =  (self.__currentTime-self.__lastTime).to_sec()
+            
+            #sauvegarde du temps dans une autre variable
+            self.__lastTime = self.__currentTime
+            
+            if(self.__localVelocity[0] == -1 and self.__localVelocity[1] == -1): self.__localVelocity = self.__lastlocalVelocity
+            if(self.__localVelocity[0] != -1  and self.__localVelocity[1] != -1):
+                if dt > 0:
+                    #calcul des vitesses et de la position
+                    self.FigureSpeed(dt)
+                    #envoie des données pour la position estimée
+                    velocityPublisher(self.__position[0], self.__position[1], self.__position[2], 
+                                        self.__localVelocity[0], self.__localVelocity[1],
+                                        self.__currentTime)
+            time.sleep(0.01)
+              
+    def FigureSpeed(self, dt):
+        #calcul de la position à partir des vitesses lineaire et angulaire
+        w = self.__localVelocity[1]
+        v = self.__localVelocity[0]
+        vx = v*math.cos(self.__position[2])
+        vy = v*math.sin(self.__position[2])
+        
+        dx = vx*dt
+        dy = vy*dt
+        dth = w*dt
+
+        self.__position[0]+=dx
+        self.__position[1]+=dy
+        self.__position[2] = self.reduceAngle(self.__position[2] + dth)
+        
+        pass
+    
+    def reduceAngle(self, x): 
+        a = math.fmod(x, 2*math.pi)
+        return a
+        
+def velocityPublisher(x, y, th, v, w, t):
+    if not rospy.is_shutdown():
+        odomQuat = quaternion_from_euler(0, 0, th)
+
+        message = Odometry()
+        message.header.stamp = t
+        message.header.frame_id = "odom"
+        message.pose.pose = Pose(Point(x, y, 0), Quaternion(*odomQuat))
+        
+        message.child_frame_id = "base_link"
+        message.twist.twist = Twist(Vector3(v, 0, 0), Vector3(0, 0, w))
+        #print(message)
+        
+        odomPub.publish(message)
+    pass
+
+def encoders_client():
+    rospy.wait_for_service('encoders')
+    get_encoders = rospy.ServiceProxy('encoders', encoders)
+    cmd = 1
+    rep = get_encoders(cmd)
+    return (rep.left, rep.right)
+
+
+
+if __name__ == "__main__":
+    
+    #initialisation du noeud
+    rospy.init_node("kalman", anonymous=False)
+    
+    #publication de l'odometrie
+    odomPub = rospy.Publisher("Odom", Odometry, queue_size=10)
+
+    #initialtisation du tf
+    odomBroadcaster = tf.TransformBroadcaster()
+    
+    #filtre de kalman
+    kalman = kalmanProcess()
+    
+    #lancement du filtre de kalman
+    rospy.loginfo("Kalman started")
+    kalman.start()

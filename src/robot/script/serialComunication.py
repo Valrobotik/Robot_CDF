@@ -1,56 +1,39 @@
 #!/usr/bin/env python
-
-# -*- coding: utf-8 -*-
-# Path: Valrob_pkg\script\serialComunication.py
-# envoie et reception de commande sur le port serie avec la carte de controle des moteurs du robot
-
 import json
 import serial
 import rospy
 from robot.srv import encoders, encodersResponse
-from threading import Thread 
+from threading import Thread
 from geometry_msgs.msg import Twist, Vector3
+import sys
 import time
 from std_msgs.msg import String
-from math import cos, sin
 
     
 
-#Thread qui permet de gerer la reception des donnees en vitesse des encodeurs et de les publier sur le topic encoders_speed
-#permet aussi le calcule des donnees en position des encodeurs et de les publier sur le topic encoders_position
-class getVitThread(Thread):
+# thread de recuperation de la vitesse lineaire et angulaire
+class getVitThread(Thread): 
     def __init__(self, serial):
-        Thread.__init__(self) # appel du constructeur du thread pour le lancer
-        self.__serial = serial # on recupere l'objet de communication serie du robot
-        self.__publish_vitesse = rospy.Publisher('encoders_speed', Vector3, queue_size=10) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders # on attend les requetes
-        self.__publish_position = rospy.Publisher('encoders_position', Vector3, queue_size=10) # on ecoute les apelle au service encoders pour recevoir les requetes du serveur sur la fonction handle_encoders # on attend les requetes
-        self.theta = 0
-        self.x = 0
-        self.y = 0
-        self.last_time = time.time()
+        Thread.__init__(self) #initialisation du thread
+        self.__serial = serial #serial port
         return
     
     def run(self):
-        self.last_time = time.time()
-        while rospy.is_shutdown() == False:
-            self.handle_encoders(1) # on traite les requetes
-            
+        rospy.Service('encoders', encoders, self.handle_encoders) #initialisation du service encoders
+        rospy.spin() #boucle infinie
+
     def getVitesse(self):
-        resp = self.__serial.sendWithResponse("M404 \n") # on envoie la commande M404 de recuperation des encodeurs
+        resp = self.__serial.askVitesse() # on demande la vitesse au robot
         if resp == None : resp = "R=(-1;-1)" # si la communication echoue on renvoie la valeur par defaut   
         return resp 
 
     def handle_encoders(self, req):
-        strData = self.getVitesse()  # on recupere la reponse du robot en string
-        data = strData.replace('R=(', '').replace(')', '').split(';') # on la transforme en tableau de float
-        self.v = float(data[0]) # on recupere la vitesse linaire des encodeurs
-        self.w = float(data[1]) # on recupere la vitesse angulaire des encodeurs
-        self.theta += self.w*(time.time() - self.last_time) # on calcule l'angle
-        self.x = self.x + self.v*(time.time() - self.last_time)*cos(self.theta) # on calcule la position x
-        self.y = self.y + self.v*(time.time() - self.last_time)*sin(self.theta) # on calcule la position y
-        self.__publish_vitesse.publish(Vector3(float(data[0]), float(data[1]), 0)) # on publie les donnees en vitesse sur le topic encoders_speed
-        self.__publish_position.publish(Vector3(self.x, self.y, self.theta)) # on publie les donnees en position sur le topic encoders_position
-        
+        #on renvoie le position du client
+        strData = self.getVitesse()
+        data = strData.replace('R=(', '').replace(')', '').split(';')
+        return encodersResponse(float(data[0]),float(data[1])) 
+
+# thread d'envoie de la consigne de vitesse
 class setVitConsignThread(Thread):
     def __init__(self, serial):
         Thread.__init__(self)
@@ -113,36 +96,29 @@ class requestMotorThread(Thread):
         except Exception:
             pass
 
-# cette objet serie permet de gerer les requettes sur le port serie
+#element de communication serie avec le controleur moteur
 class MotSerial(serial.Serial):
     def __init__(self, serialName):
-        #on ouvre le port serie passer en parametre avec une vitesse de 115200 bauds
-        serial.Serial.__init__(self, serialName, 115200, timeout=0)
-        self.__serialBusy = False # on initialise le port serie comme libre
-        '''INFO : le port serie est bloqué quand il est en train d'envoyer une commande ou de recevoir une reponse de la part du robot
-            il est donc impossible d'envoyer une commande ou de recevoir une reponse tant que le port serie est bloqué'''
-    
+        serial.Serial.__init__(self, serialName, 115200, timeout=0) #initialisation de la connexion serie
+        self.__serialBusy = False #etat de la connexion
     def busy(self):
-        return self.__serialBusy # on renvoie l'etat du port serie
-    
+        return self.__serialBusy #renvoie l'etat de la connexion
     def setUnbusy(self):
-        self.__serialBusy = False # on libere le port serie
-        
+        self.__serialBusy = False #met l'etat de la connexion a non occupe
     def setBusy(self):
-        self.__serialBusy = True # on bloque le port serie
-        
+        self.__serialBusy = True #met l'etat de la connexion a occupe
     def sendGcode(self, gcode):
-        """on envoie une commande au robot en format gcode"""
-        sended = False # on initialise la variable qui permet de savoir si la commande a ete envoyee
-        while not sended: # tant que la commande n'a pas ete envoyee
-            if (not self.busy()): # on verifie que le port serie n'est pas bloque 
-                self.setBusy() # on bloque le port serie pour eviter les conflits
-                self.write(gcode.encode("utf8")) # on envoie la commande recu en parametre
-                print(gcode) # on affiche la commande dans la console pour debug
-                sended = True   # on indique que la commande a ete envoyee
-                self.setUnbusy()# on libere le port serie
-    
-    def sendWithResponse(self, gcode):
+        sended = False #etat de l'envoie
+        while not sended: #tant que l'envoie n'est pas fait
+            if (not self.busy()): #on attend que le port soit libre
+                self.setBusy() #on bloque le port
+                self.write(gcode.encode("utf8")) #on envoie la commande
+                rospy.loginfo("comande out : " + gcode) #on affiche la commande
+                sended = True #on met l'etat de l'envoie a fait
+                self.setUnbusy()# on debloque le port
+                
+    def askVitesse(self):
+        gcode = "M404 \n" #commande a envoyer
         sended = False # on initialise la variable qui permet de savoir si la commande a ete envoyee
         while not sended: # tant que la commande n'a pas ete envoyee
             if (not self.busy()): # on verifie que le port serie n'est pas bloque
@@ -163,18 +139,20 @@ class MotSerial(serial.Serial):
                 self.setUnbusy()#on libere le port serie
         return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
 
-serialName = rospy.get_param("motor_controller_port", "/dev/ttyACM0") # on recupere le nom du port serie definit avec les parametres du robot
 
-ser = MotSerial(serialName) # on initialise l'objet serie avec le nom du port serie
+#ouverture de la connexion serie
+serialName = rospy.get_param("motor_controller_port", "/dev/tty0")
+ser = MotSerial(serialName)
 
-#execution server position
-rospy.init_node('serialCon') # on initialise le noeud ROS
+#lancement du noeud ROS : serialCon
+rospy.init_node('serialCon')
 
-vitServer = getVitThread(ser) # on initialise le thread qui gere les demandes de vitesse
-vitServer.start() # on lance le thread
+# lancement des threads
+posServer = getVitThread(ser)
+posServer.start()
 
-consServer = setVitConsignThread(ser) # on initialise le thread qui gere les requetes de consigne de vitesse
-consServer.start() # on lance le thread
+consServer = setVitConsignThread(ser)
+consServer.start()
 
-reqServer = requestMotorThread(ser) # on initialise le thread qui gere les requetes de parametres du moteur
-reqServer.start() # on lance le thread
+reqServer = requestMotorThread(ser)
+reqServer.start()
