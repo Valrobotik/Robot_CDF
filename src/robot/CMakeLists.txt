@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  imu_bmi160
 )
 
 ## System dependencies are found with CMake's conventions
@@ -164,6 +165,8 @@ catkin_install_python(PROGRAMS
   script/test_node.py
   script/kalman.py
   script/imu.py
+  script/asserv.py
+  script/strat.py
 #  scripts/BMI160_i2c/__init__.py
 #  scripts/BMI160_i2c/commands.py
 #  scripts/BMI160_i2c/definitions.py

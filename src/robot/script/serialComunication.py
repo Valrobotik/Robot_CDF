@@ -145,7 +145,8 @@ serialName = rospy.get_param("motor_controller_port", "/dev/tty0")
 ser = MotSerial(serialName)
 
 #lancement du noeud ROS : serialCon
-rospy.init_node('serialCon')
+rospy.init_node('serialCon', log_level=rospy.DEBUG)
+rospy.loginfo("serialCon started")
 
 # lancement des threads
 posServer = getVitThread(ser)
@@ -156,3 +157,5 @@ consServer.start()
 
 reqServer = requestMotorThread(ser)
 reqServer.start()
+
+rospy.spin() # on attend que le noeud soit termine
