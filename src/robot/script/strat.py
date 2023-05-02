@@ -6,7 +6,7 @@ from geometry_msgs.msg import Vector3
 
 class Match():
     def __init__(self) -> None:
-        self.__run = False # match is not running
+        self.__run = True # match is not running
         rospy.init_node("match") #initialisation du noeud match
         rospy.Subscriber("match", Bool, self.matchCallback) #initialisation du subscriber qui recupere le lancement du match
         self.__reset = rospy.Publisher("reset_all", Bool, queue_size=10) #initialisation du publisher qui reset les noeuds du robot
@@ -27,9 +27,10 @@ class Match():
     def run(self):
         rospy.loginfo("match start")
         while self.__run and not rospy.is_shutdown(): #boucle de match
-            goto = Vector3(0,0,0) #(x,y,theta)
+            goto = Vector3(1,0,None) #(x,y,theta)
             self.__control.publish(goto) #envoi de la commande de controle du robot
-
+            goto = Vector3(0,0,None) #(x,y,theta)
+            self.__control.publish(goto) #envoi de la commande de controle du robot
 
 match = Match() #initialisation du match
 match.run() #lancement 
