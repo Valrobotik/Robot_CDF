@@ -31,6 +31,7 @@ class getVitThread(Thread):
         #on renvoie le position du client
         strData = self.getVitesse()
         data = strData.replace('R=(', '').replace(')', '').split(';')
+        rospy.loginfo("vitesse : " + str(data))
         return encodersResponse(float(data[0]),float(data[1])) 
 
 # thread d'envoie de la consigne de vitesse
