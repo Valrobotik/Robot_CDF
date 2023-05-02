@@ -146,6 +146,7 @@ class MotSerial(serial.Serial):
                         sr=by.decode('utf-8') # on decode la reponse
                         rospy.loginfo("recep : %s", sr)
                         getit = (';' in sr) # on verifie que la reponse n'est pas vide
+                        rospy.sleep(0.01) # on attend 10ms pour eviter les bugs
                 self.setUnbusy()#on libere le port serie
         return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
 
