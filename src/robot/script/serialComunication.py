@@ -137,13 +137,13 @@ class MotSerial(serial.Serial):
                 getime = time.time() # on recupere le temps actuel pour eviter les boucles infinies (Timeout)
                 #reccuperation de la valeur de retour
                 rospy.sleep(0.01) # on attend 10ms pour eviter les bugs
-                while getit or (time.time() - getime) < 0.05: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
+                while getit and (time.time() - getime) < 0.05: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
                     sr = None # on initialise la variable qui contiendra la reponse
                     if self.inWaiting(): # on verifie que le port serie a recu quelque chose
                         by = self.readline() # on recupere la reponse
                         sr=by.decode('utf-8') # on decode la reponse
                         rospy.loginfo("recep : %s", sr)
-                        getit = True # on verifie que la reponse n'est pas vide
+                        getit = False # on verifie que la reponse n'est pas vide
                 self.setUnbusy()#on libere le port serie
         return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
 
