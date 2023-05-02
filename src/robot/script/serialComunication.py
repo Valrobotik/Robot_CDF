@@ -134,9 +134,9 @@ class MotSerial(serial.Serial):
                 print(gcode)    # on affiche la commande dans la console pour debug
                 sended = True  # on indique que la commande a ete envoyee
                 getit = True    # on initialise la variable qui permet de savoir si la reponse a ete recu
+                rospy.sleep(0.01) # on attend 10ms pour eviter les bugs
                 getime = time.time() # on recupere le temps actuel pour eviter les boucles infinies (Timeout)
                 #reccuperation de la valeur de retour
-                rospy.sleep(0.01) # on attend 10ms pour eviter les bugs
                 while getit and (time.time() - getime) < 0.05: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
                     sr = None # on initialise la variable qui contiendra la reponse
                     if self.inWaiting(): # on verifie que le port serie a recu quelque chose

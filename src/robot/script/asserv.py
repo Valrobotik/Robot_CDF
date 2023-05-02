@@ -14,18 +14,18 @@ class position():
         rospy.init_node("asserv")
         
         #constantes du PID lineaire
-        self.__kpv = 0.5
-        self.__kiv = 0.01
+        self.__kpv = 1
+        self.__kiv = 0.001
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = -0.5
-        self.__kia = -0.01
+        self.__kpa = -2
+        self.__kia = -0.001
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
-        self.error_l = 0.01
-        self.error_a = 0.1
+        self.error_l = 0.1
+        self.error_a = 0.01
         
         #variables du PID lineaire
         self.__integral_v = 0
