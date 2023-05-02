@@ -7,7 +7,7 @@ from threading import Thread
 from geometry_msgs.msg import Twist, Vector3
 import sys
 import time
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 
     
 
@@ -41,8 +41,13 @@ class setVitConsignThread(Thread):
 
     def run(self):
         rospy.Subscriber("robot_consign", Twist, self.sendConsign)
+        rospy.Subscriber("reset_all", Bool, self.reset)
         rospy.spin()
 
+    def reset(self, msg:Bool):
+        if msg.data:
+            self.__serial.sendGcode("G26 X0 Y0 \n") 
+        
     def sendConsign(self, cons):
         gcode = ""
         if cons.angular.z == 0:

@@ -14,7 +14,7 @@ from tf.transformations import quaternion_from_euler
 #lecture fichier de config
 
 
-class kalmanProcess():
+class odometrieProcess():
     def __init__(self):
         
         self.__d = 274.4
@@ -32,7 +32,7 @@ class kalmanProcess():
         self.__lastTime = rospy.Time.now()
         dt = 0
         time.sleep(1)
-        rospy.loginfo("Kalman process started !!!")
+        rospy.loginfo("odometrie process started !!!")
         while(rospy.is_shutdown() == False):
             data = encoders_client() #on récupère les données des encodeurs
             self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
@@ -105,7 +105,7 @@ def encoders_client():
 
 
 #initialisation du noeud
-rospy.init_node("kalman", log_level=rospy.INFO)
+rospy.init_node("odometrie", log_level=rospy.INFO)
 
 #publication de l'odometrie
 odomPub = rospy.Publisher("Odom", Odometry, queue_size=10)
@@ -113,9 +113,9 @@ odomPub = rospy.Publisher("Odom", Odometry, queue_size=10)
 #initialtisation du tf
 odomBroadcaster = tf.TransformBroadcaster()
 
-#filtre de kalman
-kalman = kalmanProcess()
+#filtre de odometrie
+odometrie = odometrieProcess()
 
-#lancement du filtre de kalman
-rospy.loginfo("Kalman process starting ...")
-kalman.start()
+#lancement du filtre de odometrie
+rospy.loginfo("odometrie process starting ...")
+odometrie.start()

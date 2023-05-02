@@ -4,7 +4,7 @@ Ce pakage est une verssion comenté du robot de la coupe de france merci de le g
 ### LISTE DES NEUDS :
 - ```serialCon``` situé dans le fichier : script/serialComunication.py
 - ```imu``` situé dans le fichier : script/imu.py
-- ```kalman``` situé dans le fichier : script/kalman.py
+- ```odometrie``` situé dans le fichier : script/odometrie.py
 - ```asserv``` situé dans le fichier : script/asserv.py
 - ```match``` situé dans le fichier : script/strat.py
 
@@ -17,19 +17,20 @@ Ce pakage est une verssion comenté du robot de la coupe de france merci de le g
 - ```imu_data``` type : Imu
   - publish (imu)
 - ```Odom``` type : Odometrie
-  - publish (kalman)
+  - publish (odometrie)
   - subscribe (asserv -> position.odom())
 - ```go``` type : Vector3
   - publish (match)
   - subscribe (asserv -> position.go())
 - ```reset_all``` type : Bool
   - publish (match)
+  - subscribe (serialCon -> setVitConsignThread.reset())
 
 
 ### LISTE DES SERVICES :
 - ```encoders``` type : encoders.srv (situé dans le dossier srv)
   - service (SerialCon -> getVitThread.handle_encoders)
-  - client (kalman)
+  - client (odometrie)
 
 ### LISTE DES PARAMETRE ROS : 
 - ```motor_controller_port```

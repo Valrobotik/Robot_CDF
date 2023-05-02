@@ -1,5 +1,6 @@
 <launch>
     <node pkg="robot" name="serialCon" type="serialComunication.py"></node>
-    <node pkg="robot" name="kalman" type="kalman.py"></node>
+    <node pkg="robot" name="odometrie" type="odometrie.py"></node>
     <node pkg="robot" name="imu" type="imu.py"></node>
+    <!--<node pkg="robot" name="strat" type="strat.py"></node>-->
 </launch>
