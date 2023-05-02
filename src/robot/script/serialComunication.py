@@ -34,7 +34,7 @@ class getVitThread(Thread):
         try :
             return encodersResponse(float(data[0]),float(data[1])) 
         except Exception:
-            print("reception : ", req)
+            rospy.loginfo("reception : %s", req)
             return encodersResponse(-1, -1)
 
 # thread d'envoie de la consigne de vitesse
@@ -144,6 +144,7 @@ class MotSerial(serial.Serial):
                     if self.inWaiting(): # on verifie que le port serie a recu quelque chose
                         by = self.readline() # on recupere la reponse
                         sr=by.decode('utf-8') # on decode la reponse
+                        rospy.loginfo("recep : %s", sr)
                         getit = (';' in sr) # on verifie que la reponse n'est pas vide
                 self.setUnbusy()#on libere le port serie
         return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
@@ -154,7 +155,7 @@ serialName = rospy.get_param("motor_controller_port", "/dev/ttyACM0")
 ser = MotSerial(serialName)
 
 #lancement du noeud ROS : serialCon
-rospy.init_node('serialCon', log_level=rospy.DEBUG)
+rospy.init_node('serialCon', log_level=rospy.INFO)
 rospy.loginfo("serialCon started")
 
 # lancement des threads
