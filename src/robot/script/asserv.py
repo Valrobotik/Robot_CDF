@@ -25,7 +25,7 @@ class position():
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
         self.error_l = 0.1
-        self.error_a = 0.01
+        self.error_a = 0.05
         
         #variables du PID lineaire
         self.__integral_v = 0
@@ -88,20 +88,21 @@ class position():
         while abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l:
             self.__dt = time.time() - previous_time
             consigne.linear.x = self.pid_v((x - self.x)**2 + (y - self.y)**2)
+            if consigne.linear.x > 0.8: consigne.linear.x = 0.8
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
             time.sleep(0.1)
         
     def pid_v(self, erreur):
         self.__integral_v += erreur*self.__dt
-        if self.__integral_v > 0.5: self.__integral_v = 0.5
+        if self.__integral_v > 0.2: self.__integral_v = 0.2
         self.__derivative_v = (erreur - self.__previous_error_v)/self.__dt
         self.__previous_error_v = erreur
         return(self.__kpv*erreur + self.__kiv*self.__integral_v + self.__kdv*self.__derivative_v)
     
     def pid_a(self, erreur):
         self.__integral_a += erreur*self.__dt
-        if self.__integral_a > 0.5: self.__integral_a = 0.5
+        if self.__integral_a > 0.2: self.__integral_a = 0.2
         self.__derivative_a = (erreur - self.__previous_error_a)/self.__dt
         self.__previous_error_a = erreur
         return(self.__kpa*erreur + self.__kia*self.__integral_a + self.__kda*self.__derivative_a)
