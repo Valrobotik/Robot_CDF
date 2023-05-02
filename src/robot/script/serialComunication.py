@@ -135,7 +135,7 @@ class MotSerial(serial.Serial):
                 getit = True    # on initialise la variable qui permet de savoir si la reponse a ete recu
                 getime = time.time() # on recupere le temps actuel pour eviter les boucles infinies (Timeout)
                 #reccuperation de la valeur de retour
-                while getit and (time.time() - getime) < 0.1: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
+                while getit and (time.time() - getime) < 0.05: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
                     sr = None # on initialise la variable qui contiendra la reponse
                     if self.inWaiting(): # on verifie que le port serie a recu quelque chose
                         by = self.readline() # on recupere la reponse

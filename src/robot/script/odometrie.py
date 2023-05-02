@@ -24,7 +24,7 @@ class odometrieProcess():
         self.__lastTime = 0
         self.__currentTime = 0
         self.__localVelocity = [-1, -1] #(vx, w)
-        self.__lastlocalVelocity = [0.0, 0.5]
+        self.__lastlocalVelocity = [1, 0.1]
         self.__position = [0, 0, 0] #(x, y, theta)
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
@@ -35,11 +35,10 @@ class odometrieProcess():
         if msg.data :
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
-            self.__localVelocity = [-1, -1] #(vx, w)
-            self.__lastlocalVelocity = [0.0, 0.5]
             self.__position = [0, 0, 0] #(x, y, theta)
             self.__maxTicks = 65535
             self.__maxSafeTicks = 500
+        
             
     def start(self):
         dt = 0
@@ -101,9 +100,10 @@ def velocityPublisher(x, y, th, v, w, t):
     message.header.stamp = t
     message.header.frame_id = "odom"
     message.pose.pose = Pose(Point(x, y, 0), Quaternion(*odomQuat))
-    
     message.child_frame_id = "base_link"
-    message.twist.twist = Twist(Vector3(v, 0, 0), Vector3(0, 0, w))
+    vx = v*math.cos(th)
+    vy = v*math.sin(th)
+    message.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, w))
     #print(message)
     
     odomPub.publish(message)

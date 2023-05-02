@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
-  imu_bmi160
 )
 
 ## System dependencies are found with CMake's conventions
@@ -163,7 +162,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   script/serialComunication.py
   script/test_node.py
-  script/kalman.py
+  script/odometrie.py
   script/imu.py
   script/asserv.py
   script/strat.py
