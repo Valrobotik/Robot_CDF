@@ -15,12 +15,12 @@ class position():
         
         #constantes du PID lineaire
         self.__kpv = 0.5
-        self.__kiv = 0.5
+        self.__kiv = 0.01
         self.__kdv = 0
         
         #constantes du PID angulaire
         self.__kpa = 0.5
-        self.__kia = 0.5
+        self.__kia = 0.01
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
@@ -94,12 +94,14 @@ class position():
         
     def pid_v(self, erreur):
         self.__integral_v += erreur*self.__dt
+        if self.__integral_v > 0.5: self.__integral_v = 0.5
         self.__derivative_v = (erreur - self.__previous_error_v)/self.__dt
         self.__previous_error_v = erreur
         return(self.__kpv*erreur + self.__kiv*self.__integral_v + self.__kdv*self.__derivative_v)
     
     def pid_a(self, erreur):
         self.__integral_a += erreur*self.__dt
+        if self.__integral_a > 0.5: self.__integral_a = 0.5
         self.__derivative_a = (erreur - self.__previous_error_a)/self.__dt
         self.__previous_error_a = erreur
         return(self.__kpa*erreur + self.__kia*self.__integral_a + self.__kda*self.__derivative_a)
