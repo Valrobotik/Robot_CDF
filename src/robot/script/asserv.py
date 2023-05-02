@@ -122,3 +122,6 @@ class position():
         if rep.z != None:
             self.rotation(rep.z)
         self.stop()
+
+pos = position()
+rospy.spin()
