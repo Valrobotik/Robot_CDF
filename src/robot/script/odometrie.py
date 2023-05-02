@@ -24,7 +24,7 @@ class odometrieProcess():
         self.__lastTime = 0
         self.__currentTime = 0
         self.__localVelocity = [-1, -1] #(vx, w)
-        self.__lastlocalVelocity = [1, 0.1]
+        self.__lastlocalVelocity = [0, 0]
         self.__position = [0, 0, 0] #(x, y, theta)
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
