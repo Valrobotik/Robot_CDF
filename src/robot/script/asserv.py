@@ -112,6 +112,7 @@ class position():
         consigne.linear.y = 0
         consigne.angular.z = 0
         self.pub.publish(consigne)
+        time.sleep(0.1)
     
     def go_to(self, x, y):
         self.rotation(math.atan2(y, x))
