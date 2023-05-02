@@ -42,10 +42,9 @@ class odometrieProcess():
             
     def start(self):
         dt = 0
-        time.sleep(1)
         self.__lastTime = rospy.Time.now()
         rospy.loginfo("odometrie process started !!!")
-        while(rospy.is_shutdown() == False):
+        while(True):
             data = encoders_client() #on récupère les données des encodeurs
             self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
             
