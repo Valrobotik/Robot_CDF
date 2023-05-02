@@ -31,7 +31,11 @@ class getVitThread(Thread):
         #on renvoie le position du client
         strData = self.getVitesse()
         data = strData.replace('R=(', '').replace(')', '').split(';')
-        return encodersResponse(float(data[0]),float(data[1])) 
+        try :
+            return encodersResponse(float(data[0]),float(data[1])) 
+        except Exception:
+            print("reception : ", req)
+            return encodersResponse(-1, -1)
 
 # thread d'envoie de la consigne de vitesse
 class setVitConsignThread(Thread):
