@@ -140,13 +140,13 @@ class MotSerial(serial.Serial):
                     if self.inWaiting(): # on verifie que le port serie a recu quelque chose
                         by = self.readline() # on recupere la reponse
                         sr=by.decode('utf-8') # on decode la reponse
-                        getit = (sr == None) # on verifie que la reponse n'est pas vide
+                        getit = (';' in sr) # on verifie que la reponse n'est pas vide
                 self.setUnbusy()#on libere le port serie
         return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
 
 
 #ouverture de la connexion serie
-serialName = rospy.get_param("motor_controller_port", "/dev/tty0")
+serialName = rospy.get_param("motor_controller_port", "/dev/ttyACM0")
 ser = MotSerial(serialName)
 
 #lancement du noeud ROS : serialCon
