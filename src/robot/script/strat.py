@@ -19,7 +19,7 @@ class Match():
     def ready(self):
         while not rospy.is_shutdown(): 
             rospy.loginfo("ready for match")
-            self.__reset.publish(True) #reset des noeuds du robot 
+            #self.__reset.publish(True) #reset des noeuds du robot 
             rospy.sleep(0.1)
             if self.__run:
                 self.run()
@@ -27,9 +27,7 @@ class Match():
     def run(self):
         rospy.loginfo("match start")
         while self.__run and not rospy.is_shutdown(): #boucle de match
-            goto = Vector3(1,0,None) #(x,y,theta)
-            self.__control.publish(goto) #envoi de la commande de controle du robot
-            goto = Vector3(0,0,None) #(x,y,theta)
+            goto = Vector3(0,0,0) #(x,y,theta)
             self.__control.publish(goto) #envoi de la commande de controle du robot
 
 match = Match() #initialisation du match
