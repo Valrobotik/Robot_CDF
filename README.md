@@ -1,6 +1,12 @@
 # PAKAGE ROS ROBOT VALROB
 Ce pakage est une verssion comenté du robot de la coupe de france merci de le garder fonctionel, toute modification doit etre commenter corectement. 
 
+### LIBRAIRIE PYTHON :
+- ```BMI160_i2c``` (python3 -> pip install BMI160-i2c)
+- ```pyserial``` (python3 -> pip install pyserial)
+- ```math``` (python3)
+- ```time``` (python3)
+
 ### LISTE DES NEUDS :
 - ```serialCon``` situé dans le fichier : script/serialComunication.py
 - ```imu``` situé dans le fichier : script/imu.py
@@ -25,6 +31,8 @@ Ce pakage est une verssion comenté du robot de la coupe de france merci de le g
 - ```reset_all``` type : Bool
   - publish (match)
   - subscribe (serialCon -> setVitConsignThread.reset())
+  - subscribe (odometrie -> odometrieProcess.reset())
+  - subscribe (asserv -> position.reset())
 
 
 ### LISTE DES SERVICES :

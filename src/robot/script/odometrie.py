@@ -10,6 +10,7 @@ import tf
 import sys
 import math
 from tf.transformations import quaternion_from_euler
+from std_msgs.msg import Bool
 
 #lecture fichier de config
 
@@ -27,11 +28,23 @@ class odometrieProcess():
         self.__position = [0, 0, 0] #(x, y, theta)
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
+        
+        self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset)
+    
+    def reset(self, msg: Bool):
+        if msg.data :
+            self.__lastTime = rospy.Time.now()
+            self.__currentTime = rospy.Time.now()
+            self.__localVelocity = [-1, -1] #(vx, w)
+            self.__lastlocalVelocity = [0.0, 0.5]
+            self.__position = [0, 0, 0] #(x, y, theta)
+            self.__maxTicks = 65535
+            self.__maxSafeTicks = 500
             
     def start(self):
-        self.__lastTime = rospy.Time.now()
         dt = 0
         time.sleep(1)
+        self.__lastTime = rospy.Time.now()
         rospy.loginfo("odometrie process started !!!")
         while(rospy.is_shutdown() == False):
             data = encoders_client() #on récupère les données des encodeurs

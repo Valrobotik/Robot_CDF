@@ -6,6 +6,7 @@ import time
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Vector3
 import math
+from std_msgs.msg import Bool
 
 class position():
     def __init__(self) -> None:
@@ -45,7 +46,23 @@ class position():
         rospy.Subscriber("/Odom", Odometry, self.odom)
         self.pub = rospy.Publisher("robot_consign", Twist, queue_size=10)
         rospy.Subscriber("go", Vector3, self.go)
+        rospy.Subscriber("reset_all", Bool, self.reset)
+    
+    def reset(self, rep:Bool):
+        if rep.data:
+            self.__integral_v = 0
+            self.__integral_a = 0  
+            self.__previous_error_v = 0
+            self.__previous_error_a = 0
+            self.__dt = 0
+            self.__action = False
+            
+            #position du robot
+            self.x = 0
+            self.y = 0
+            self.a = 0
         
+    
     def odom(self, rep):
         self.x = rep.pose.pose.position.x
         self.y = rep.pose.pose.position.y
