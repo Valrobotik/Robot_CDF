@@ -130,6 +130,7 @@ class MotSerial(serial.Serial):
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
+                rospy.sleep(0.005) #on attend 0.005s
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
                 
@@ -142,11 +143,12 @@ class MotSerial(serial.Serial):
                 self.__receipeserialBusy = True # on bloque le port serie pour eviter les conflits
                 #envoie de la commande
                 self.write(gcode.encode("utf8")) # on envoie la commande recu en parametre
+                rospy.sleep(0.005) #on attend 5ms pour eviter les bugs
                 self.setUnbusy()#on libere le port serie
                 print(gcode)    # on affiche la commande dans la console pour debug
                 sended = True  # on indique que la commande a ete envoyee
                 getit = True    # on initialise la variable qui permet de savoir si la reponse a ete recu
-                rospy.sleep(0.01) # on attend 10ms pour eviter les bugs
+                rospy.sleep(0.005) # on attend 5ms pour eviter les bugs
                 getime = time.time() # on recupere le temps actuel pour eviter les boucles infinies (Timeout)
                 #reccuperation de la valeur de retour
                 while getit and (time.time() - getime) < 0.05: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
