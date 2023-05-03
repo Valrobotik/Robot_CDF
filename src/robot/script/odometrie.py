@@ -91,27 +91,31 @@ class odometrieProcess():
         self.__position[0]+=dx
         self.__position[1]+=dy
         
+        self.__position[2] = self.reduceAngle(self.__position[2] + dth)
+        
         pass
     
     def reduceAngle(self, x): 
         a = math.fmod(x, 2*math.pi)
         return a
         
-def velocityPublisher(x, y, th, v, w, t):
-    
-    odomQuat = quaternion_from_euler(0, 0, th)
+def velocityPublisher(x, y, th, v, w, t, vl, vr):
+    if not rospy.is_shutdown():
+        odomQuat = quaternion_from_euler(0, 0, th)
 
-    message = Odometry()
-    message.header.stamp = t
-    message.header.frame_id = "odom"
-    message.pose.pose = Pose(Point(x, y, 0), Quaternion(*odomQuat))
-    message.child_frame_id = "base_link"
-    vx = v*math.cos(th)
-    vy = v*math.sin(th)
-    message.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, w))
-    #print(message)
-    
-    odomPub.publish(message)
+        message = Odometry()
+        message.header.stamp = t
+        message.header.frame_id = "odom"
+        message.pose.pose = Pose(Point(x, y, 0), Quaternion(*odomQuat))
+        
+        message.child_frame_id = "base_link"
+        message.twist.twist = Twist(Vector3(v, 0, 0), Vector3(0, 0, w))
+        #print(message)
+        
+        odomPub.publish(message)
+
+        diffMsg = Twist(Vector3(vl, vr, 0), Vector3(0, 0, 0))
+        odomPub.publish(diffMsg)
     pass
 
 def encoders_client():
