@@ -70,6 +70,14 @@ class requestMotorThread(Thread):
     def run(self):
         # on ecoute le topic server_req pour recevoir les requetes du serveur sur la fonction sendReq
         rospy.Subscriber("server_req", String, self.sendReq)
+        
+        #on set les pid par defaut
+        rospy.sleep(0.1)
+        gcode = "M301 P3.2 I0.5 D0.01\n"
+        self.__serial.sendGcode(gcode)
+        rospy.sleep(0.1)
+        gcode = "M302 P8.5 I0.65 D0.01\n"
+        self.__serial.sendGcode(gcode)
         #on attend les requetes
         rospy.spin()
 

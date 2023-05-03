@@ -76,7 +76,8 @@ class position():
         previous_time = time.time()
         while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
-            consigne.angular.x = self.pid_a(self.a - angle)
+            consigne.angular.x = self.pid_a(self.a - angle)+0.2
+            if consigne.angular.x > 0.8: consigne.angular.x = 0.8
             self.pub.publish(consigne)
             time.sleep(0.1)
     
