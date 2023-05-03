@@ -139,18 +139,18 @@ class MotSerial(serial.Serial):
         self.__sendserialBusy = True #met l'etat de la connexion a occupe
 
     def sendGcode(self, gcode):
-        rospy.loginfo("comande out 1 : " + gcode) #on affiche la commande
         sended = False #etat de l'envoie
         while not sended: #tant que l'envoie n'est pas fait
-            rospy.loginfo("comande wait : " + gcode) #on affiche la commande
+            rospy.loginfo("etat : " + str(self.busy()))
             if (self.busy()): #on attend que le port soit libre
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
+                rospy.sleep(0.01)
 
-    def askVitesse(self):
+    """def askVitesse(self):
         gcode = "M404 \n" #commande a envoyer
         sended = False # on initialise la variable qui permet de savoir si la commande a ete envoyee
         while not sended: # tant que la commande n'a pas ete envoyee
@@ -175,7 +175,7 @@ class MotSerial(serial.Serial):
                         rospy.loginfo("recep : %s", sr)
                         getit = False # on verifie que la reponse n'est pas vide
                 self.__receipeserialBusy = False # on debloque le port serie
-        return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
+        return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)"""
 
 
 #ouverture de la connexion serie
