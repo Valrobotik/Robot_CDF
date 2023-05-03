@@ -82,7 +82,7 @@ class position():
             if consigne.angular.x > 1: consigne.angular.x = 1
             elif consigne.angular.x < -1: consigne.angular.x = -1
             self.pub.publish(consigne)
-            rospy.sleep(0.02)
+            rospy.sleep(0.05)
     
     def translation(self, x, y):
         consigne = Twist()
@@ -95,7 +95,7 @@ class position():
             if consigne.linear.x > 0.8: consigne.linear.x = 0.8
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
-            rospy.sleep(0.02)
+            rospy.sleep(0.05)
         
     def pid_v(self, erreur):
         self.__integral_v += erreur*self.__dt
@@ -117,7 +117,7 @@ class position():
         consigne.linear.y = 0
         consigne.angular.z = 0
         self.pub.publish(consigne)
-        time.sleep(0.1)
+        rospy.sleep(0.1)
     
     def go_to(self, x, y):
         self.rotation(math.atan2(y, x))

@@ -16,15 +16,17 @@ from std_msgs.msg import Bool
 
 class odometrieProcess():
     def __init__(self):
-        
         self.__d = 274.4
         self.__r = 32
         self.__tpr = 1000
         self.__lastTime = 0
         self.__currentTime = 0
-        self.__localVelocity = [-1, -1] #(vx, w)
-        self.__lastlocalVelocity = [0, 0]
-        self.__position = [0, 0, 0] #(x, y, theta)
+        self.__encTicks = [0, 0] #(left, right)
+        self.__lastEncTicks = [-1, -1] 
+        self.__encDiffSpeed = [0, 0] #(vleft, vright)
+        self.__localVelocity = [0, 0] #(vx, w)
+        self.__velocity = [0, 0, 0] #(vx,vy, omega)
+        self.__position = [0, 0, 0]
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
         
@@ -34,53 +36,60 @@ class odometrieProcess():
         if msg.data :
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
-            self.__position = [0, 0, 0] #(x, y, theta)
-            self.__maxTicks = 65535
-            self.__maxSafeTicks = 500
+
         
             
     def start(self):
-        dt = 0
         self.__lastTime = rospy.Time.now()
+        dt = 0
         while(True):
-            data = encoders_client() #on récupère les données des encodeurs
-            self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
+            #get the the encoders data
+            time.sleep(0.01)
+            #print(self.__encTicks)
+            #self.__lastTime = rospy.Time.now()
+            #récupération des données des encodeurs
+            data = encoders_client()
+            #on enregistre les anciennes valeurs des encodeurs
+            self.__lastEncTicks = self.__encTicks
+            #enregistre les données récupérées
+            self.__encTicks = [data[0], data[1]]
             
             #temps actuel
             self.__currentTime = rospy.Time.now()
-            
             #calcul de dt
-            dt =  (self.__currentTime-self.__lastTime).to_sec()
-            
+            dt =  (self.__currentTime- self.__lastTime).to_sec()
             #sauvegarde du temps dans une autre variable
             self.__lastTime = self.__currentTime
-            
-            if(self.__localVelocity[0] == -1 and self.__localVelocity[1] == -1): self.__localVelocity = self.__lastlocalVelocity
-            if(self.__localVelocity[0] != -1  and self.__localVelocity[1] != -1):
-                rospy.loginfo("dt = %f", dt)
+            if(self.__encTicks[0] != -1 and self.__encTicks != -1):
                 if dt > 0:
                     #calcul des vitesses et de la position
                     self.FigureSpeed(dt)
                     #envoie des données pour la position estimée
                     velocityPublisher(self.__position[0], self.__position[1], self.__position[2], 
-                                      self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
-                    
-            self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
+                                        self.__localVelocity[0], self.__localVelocity[1],
+                                        self.__currentTime, self.__encDiffSpeed[0], self.__encDiffSpeed[1])
+                    pass
               
     def FigureSpeed(self, dt):
         #calcul de la position à partir des vitesses lineaire et angulaire
-        w = self.__localVelocity[1]
-        v = self.__localVelocity[0]
+        rightSpeed=self.__encTicks[1]
+        
+        leftSpeed=self.__encTicks[0]
+        self.__encDiffSpeed = [self.__encTicks[0], self.__encTicks[1]]
+        
+        w = (rightSpeed - leftSpeed)/self.__d*1000
+        v = (rightSpeed + leftSpeed)/2
+        self.__localVelocity = [v, w]
         vx = v*math.cos(self.__position[2])
         vy = v*math.sin(self.__position[2])
-        
+        self.__velocity=[vx,vy , w]
+
         dx = vx*dt
         dy = vy*dt
         dth = w*dt
 
         self.__position[0]+=dx
         self.__position[1]+=dy
-        self.__position[2] = self.reduceAngle(self.__position[2] + dth)
         
         pass
     

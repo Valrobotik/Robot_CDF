@@ -15,7 +15,10 @@ from std_msgs.msg import String, Bool
 class getVitThread(Thread): 
     def __init__(self, serial):
         Thread.__init__(self) #initialisation du thread
+        self.__serial : MotSerial
         self.__serial = serial #serial port
+        self.__left = 0 #vitesse roue gauche
+        self.__right = 0 #vitesse roue droite
         return
     
     def run(self):
@@ -23,16 +26,17 @@ class getVitThread(Thread):
         rospy.spin() #boucle infinie
 
     def getVitesse(self):
-        resp = self.__serial.askVitesse() # on demande la vitesse au robot
-        if resp == None : resp = "R=(-1;-1)" # si la communication echoue on renvoie la valeur par defaut   
-        return resp 
+        self.__serial.sendGcode("M403 \n") #envoie de la commande M403
+        while not rospy.is_shutdown():
+            x = self.__serial.readline().decode('utf8') #lecture de la reponse
+            data = x.replace('(', '').replace(')', '').split(';') #traitement de la reponse
+            self.__left = float(data[0]) #recuperation de la vitesse roue gauche
+            self.__right = float(data[1]) #recuperation de la vitesse roue droite
+            
 
     def handle_encoders(self, req):
         #on renvoie le position du client
-        strData = self.getVitesse()
-        data = strData.replace('R=(', '').replace(')', '').split(';')
-        rospy.loginfo("vitesse : " + str(data))
-        return encodersResponse(float(data[0]),float(data[1])) 
+        return encodersResponse(self.__left, self.__right) 
 
 # thread d'envoie de la consigne de vitesse
 class setVitConsignThread(Thread):
@@ -117,24 +121,25 @@ class MotSerial(serial.Serial):
         
         self.__sendserialBusy = False #etat de la connexion
         self.__receipeserialBusy = False #etat de la connexion
-        
+
     def busy(self):
         return self.__sendserialBusy #renvoie l'etat de la connexion
     def setUnbusy(self):
         self.__sendserialBusy = False #met l'etat de la connexion a non occupe
     def setBusy(self):
         self.__sendserialBusy = True #met l'etat de la connexion a occupe
+
     def sendGcode(self, gcode):
         sended = False #etat de l'envoie
         while not sended: #tant que l'envoie n'est pas fait
-            if (not self.busy()): #on attend que le port soit libre
+            if (self.busy()): #on attend que le port soit libre
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
                 rospy.sleep(0.005) #on attend 0.005s
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
-                
+
     def askVitesse(self):
         gcode = "M404 \n" #commande a envoyer
         sended = False # on initialise la variable qui permet de savoir si la commande a ete envoyee
