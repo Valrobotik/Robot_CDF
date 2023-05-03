@@ -27,9 +27,12 @@ class getVitThread(Thread):
         rospy.spin() #boucle infinie
 
     def getVitesse(self):
+        rospy.sleep(1) #attente au demarrage
         self.__serial.sendGcode("M403 \n") #envoie de la commande M403
+        rospy.sleep(0.05) #attente de la reponse
         while not rospy.is_shutdown():
-            x = self.__serial.readline().decode('utf8') #lecture de la reponse
+            x = self.__serial.readline()#lecture de la reponse
+            x = x.decode('utf8') 
             rospy.loginfo(x)
             data = x.replace('(', '').replace(')', '').split(';') #traitement de la reponse
             self.__left = float(data[0]) #recuperation de la vitesse roue gauche
@@ -138,7 +141,6 @@ class MotSerial(serial.Serial):
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
-                rospy.sleep(0.005) #on attend 0.005s
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
 

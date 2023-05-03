@@ -120,8 +120,6 @@ def encoders_client():
     get_encoders = rospy.ServiceProxy('encoders', encoders)
     cmd = 1
     rep = get_encoders(cmd)
-    rospy.loginfo("data des encodeurs recu")
-    rospy.loginfo("encoders : %d, %d", rep.left, rep.right)
     return (rep.left, rep.right)
 
 
