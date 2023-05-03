@@ -39,8 +39,9 @@ class getVitThread(Thread):
             x = x.decode('utf8') 
             rospy.loginfo(x)
             data = x.replace('(', '').replace(')', '').split(';') #traitement de la reponse
-            self.__left = float(data[0]) #recuperation de la vitesse roue gauche
-            self.__right = float(data[1]) #recuperation de la vitesse roue droite
+            if len(data) == 5:
+                self.__left = float(data[3]) #recuperation de la vitesse roue gauche
+                self.__right = float(data[4]) #recuperation de la vitesse roue droite
             
 
     def handle_encoders(self, req):
