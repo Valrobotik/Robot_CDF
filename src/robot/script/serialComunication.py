@@ -30,7 +30,7 @@ class getVitThread(Thread):
         rospy.sleep(1) #attente au demarrage
         self.__serial.sendGcode("M403 \n") #envoie de la commande M403
         rospy.sleep(0.05) #attente de la reponse
-        while not rospy.is_shutdown():
+        while True:
             x = self.__serial.readline()#lecture de la reponse
             x = x.decode('utf8') 
             rospy.loginfo(x)
