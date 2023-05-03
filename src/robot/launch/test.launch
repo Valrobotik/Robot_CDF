@@ -1,5 +1,7 @@
 <launch>
-    <node pkg="robot" name="serialCon" type="serialComunication.py"></node>
+    <node pkg="robot" name="serialCon" type="serialComunication.py">
+        <rosparam 
+    </node>
     <node pkg="robot" name="odometrie" type="odometrie.py"></node>
     <node pkg="robot" name="imu" type="imu.py"></node>
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_node">

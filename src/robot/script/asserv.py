@@ -3,7 +3,7 @@
 
 import rospy
 import time
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry # type: ignore
 from geometry_msgs.msg import Twist, Vector3
 import math
 from std_msgs.msg import Bool

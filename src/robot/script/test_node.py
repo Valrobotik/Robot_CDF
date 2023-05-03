@@ -6,7 +6,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist, Vector3
-from robot.srv import encoders, encodersResponse
+from robot.srv import encoders, encodersResponse 
 from threading import Thread
 import time
 
@@ -19,7 +19,7 @@ class sendConsign(Thread):
         dt = time.time()
         while rospy.is_shutdown() == False:
             
-            position_pub.publish(Twist(Vector3(self.__position,0,x), Vector3(a,0,self.__angle)))
+            position_pub.publish(Twist(Vector3(self.__position,0,0), Vector3(0,0,self.__angle)))
     
 
 def encoders_client(get_encoders):

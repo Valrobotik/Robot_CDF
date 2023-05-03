@@ -4,12 +4,12 @@ import time
 import json
 from threading import Thread
 from robot.srv import encoders, encodersResponse
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry # type: ignore
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
-import tf
+import tf # type: ignore
 import sys
 import math
-from tf.transformations import quaternion_from_euler
+from tf.transformations import quaternion_from_euler # type: ignore
 from std_msgs.msg import Bool
 #lecture fichier de config
 

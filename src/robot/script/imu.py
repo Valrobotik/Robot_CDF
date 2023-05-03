@@ -6,8 +6,8 @@
 
 import rospy
 from geometry_msgs.msg import Twist, Vector3, Quaternion
-from BMI160_i2c import Driver
-from sensor_msgs.msg import Imu
+from BMI160_i2c import Driver # type: ignore
+from sensor_msgs.msg import Imu # type: ignore
 import math
 
 
