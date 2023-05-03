@@ -43,10 +43,6 @@ class odometrieProcess():
         self.__lastTime = rospy.Time.now()
         dt = 0
         while(True):
-            #get the the encoders data
-            time.sleep(0.01)
-            #print(self.__encTicks)
-            #self.__lastTime = rospy.Time.now()
             #récupération des données des encodeurs
             data = encoders_client()
             #on enregistre les anciennes valeurs des encodeurs
