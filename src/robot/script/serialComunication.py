@@ -27,9 +27,11 @@ class getVitThread(Thread):
         rospy.spin() #boucle infinie
 
     def getVitesse(self):
-        rospy.sleep(1) #attente au demarrage
+        rospy.sleep(0.1) #attente au demarrage
+        rospy.loginfo("getVitesse-1")
         self.__serial.sendGcode("M403 \n") #envoie de la commande M403
         rospy.sleep(0.05) #attente de la reponse
+        rospy.loginfo("getVitesse0")
         while True:
             rospy.loginfo("getVitesse")
             x = self.__serial.readline()#lecture de la reponse
