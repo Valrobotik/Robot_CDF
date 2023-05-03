@@ -30,6 +30,7 @@ class getVitThread(Thread):
         rospy.sleep(1) #attente de la connection
         while True:
             self.__serial.sendGcode("M404 \n") 
+            rospy.sleep(0.01) #attente de la reponse
             x = self.__serial.readline()#lecture de la reponse
             x = x.decode('utf8') 
             rospy.loginfo(x)
@@ -86,14 +87,14 @@ class requestMotorThread(Thread):
         rospy.Subscriber("server_req", String, self.sendReq)
         
         #on set les pid par defaut
-        rospy.sleep(0.1)
+        """rospy.sleep(0.1)
         gcode = "M301 P3.2 I0.5 D0.01 \n"
         self.__serial.sendGcode(gcode)
         self.__serial.sendGcode("M400 \n")    
         rospy.sleep(0.1)
         gcode = "M302 P8.5 I0.65 D0.01 \n"
         self.__serial.sendGcode(gcode)
-        self.__serial.sendGcode("M400 \n")    
+        self.__serial.sendGcode("M400 \n")  """  
         #on attend les requetes
         rospy.spin()
 
