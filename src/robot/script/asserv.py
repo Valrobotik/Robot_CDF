@@ -19,8 +19,8 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = -4
-        self.__kia = -0.01
+        self.__kpa = 4
+        self.__kia = 0.01
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
@@ -67,7 +67,7 @@ class position():
     def odom(self, rep):
         self.x = rep.pose.pose.position.x
         self.y = rep.pose.pose.position.y
-        self.a = rep.pose.pose.orientation.z
+        self.a = rep.pose.pose.orientation.z*math.pi
         
     def rotation(self, angle):
         consigne = Twist()
@@ -82,7 +82,7 @@ class position():
             if consigne.angular.x > 1: consigne.angular.x = 1
             elif consigne.angular.x < -1: consigne.angular.x = -1
             self.pub.publish(consigne)
-            time.sleep(0.01)
+            rospy.sleep(0.02)
     
     def translation(self, x, y):
         consigne = Twist()
@@ -95,7 +95,7 @@ class position():
             if consigne.linear.x > 0.8: consigne.linear.x = 0.8
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
-            time.sleep(0.01)
+            rospy.sleep(0.02)
         
     def pid_v(self, erreur):
         self.__integral_v += erreur*self.__dt

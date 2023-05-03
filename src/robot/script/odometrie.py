@@ -11,7 +11,6 @@ import sys
 import math
 from tf.transformations import quaternion_from_euler
 from std_msgs.msg import Bool
-
 #lecture fichier de config
 
 
@@ -44,7 +43,6 @@ class odometrieProcess():
         dt = 0
         self.__lastTime = rospy.Time.now()
         while(True):
-            rospy.loginfo("odometrie process started !!!")
             data = encoders_client() #on récupère les données des encodeurs
             self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
             
@@ -68,7 +66,6 @@ class odometrieProcess():
                                       self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
                     
             self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
-            time.sleep(0.01)
               
     def FigureSpeed(self, dt):
         #calcul de la position à partir des vitesses lineaire et angulaire

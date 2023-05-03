@@ -114,13 +114,15 @@ class requestMotorThread(Thread):
 class MotSerial(serial.Serial):
     def __init__(self, serialName):
         serial.Serial.__init__(self, serialName, 115200, timeout=0) #initialisation de la connexion serie
-        self.__serialBusy = False #etat de la connexion
+        self.__sendserialBusy = False #etat de la connexion
+        self.__receipeserialBusy = False #etat de la connexion
+        
     def busy(self):
-        return self.__serialBusy #renvoie l'etat de la connexion
+        return self.__sendserialBusy #renvoie l'etat de la connexion
     def setUnbusy(self):
-        self.__serialBusy = False #met l'etat de la connexion a non occupe
+        self.__sendserialBusy = False #met l'etat de la connexion a non occupe
     def setBusy(self):
-        self.__serialBusy = True #met l'etat de la connexion a occupe
+        self.__sendserialBusy = True #met l'etat de la connexion a occupe
     def sendGcode(self, gcode):
         sended = False #etat de l'envoie
         while not sended: #tant que l'envoie n'est pas fait
@@ -135,10 +137,12 @@ class MotSerial(serial.Serial):
         gcode = "M404 \n" #commande a envoyer
         sended = False # on initialise la variable qui permet de savoir si la commande a ete envoyee
         while not sended: # tant que la commande n'a pas ete envoyee
-            if (not self.busy()): # on verifie que le port serie n'est pas bloque
+            if (not self.busy() and not self.__receipeserialBusy): # on verifie que le port serie n'est pas bloque
                 self.setBusy() # on bloque le port serie pour eviter les conflits
+                self.__receipeserialBusy = True # on bloque le port serie pour eviter les conflits
                 #envoie de la commande
                 self.write(gcode.encode("utf8")) # on envoie la commande recu en parametre
+                self.setUnbusy()#on libere le port serie
                 print(gcode)    # on affiche la commande dans la console pour debug
                 sended = True  # on indique que la commande a ete envoyee
                 getit = True    # on initialise la variable qui permet de savoir si la reponse a ete recu
@@ -152,7 +156,7 @@ class MotSerial(serial.Serial):
                         sr=by.decode('utf-8') # on decode la reponse
                         rospy.loginfo("recep : %s", sr)
                         getit = False # on verifie que la reponse n'est pas vide
-                self.setUnbusy()#on libere le port serie
+                self.__receipeserialBusy = False # on debloque le port serie
         return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)
 
 
