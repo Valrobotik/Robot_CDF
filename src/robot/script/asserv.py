@@ -43,7 +43,7 @@ class position():
         self.y = 0
         self.a = 0
 
-        rospy.Subscriber("/Odom", Odometry, self.odom)
+        rospy.Subscriber("/odometry/filtered", Odometry, self.odom)
         self.pub = rospy.Publisher("robot_consign", Twist, queue_size=10)
         rospy.Subscriber("go", Vector3, self.go)
         rospy.Subscriber("reset_all", Bool, self.reset)
@@ -77,7 +77,7 @@ class position():
         while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
             consigne.angular.x = self.pid_a(self.a - angle)+0.2
-            if consigne.angular.x > 0.8: consigne.angular.x = 0.8
+            if consigne.angular.x > 1: consigne.angular.x = 1
             self.pub.publish(consigne)
             time.sleep(0.01)
     
