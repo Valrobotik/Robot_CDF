@@ -28,6 +28,7 @@ class getVitThread(Thread):
 
     def getVitesse(self):
         rospy.sleep(1) #attente au demarrage
+        rospy.loginfo("getVitesse")
         self.__serial.sendGcode("M403 \n") #envoie de la commande M403
         rospy.sleep(0.05) #attente de la reponse
         while True:
