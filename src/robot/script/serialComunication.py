@@ -23,6 +23,7 @@ class getVitThread(Thread):
     
     def run(self):
         rospy.Service('encoders', encoders, self.handle_encoders) #initialisation du service encoders
+        self.getVitesse() #recuperation de la vitesse
         rospy.spin() #boucle infinie
 
     def getVitesse(self):
