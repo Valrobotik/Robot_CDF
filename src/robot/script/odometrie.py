@@ -113,9 +113,6 @@ def velocityPublisher(x, y, th, v, w, t, vl, vr):
         #print(message)
         
         odomPub.publish(message)
-
-        diffMsg = Twist(Vector3(vl, vr, 0), Vector3(0, 0, 0))
-        odomPub.publish(diffMsg)
     pass
 
 def encoders_client():
