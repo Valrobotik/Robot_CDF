@@ -142,7 +142,7 @@ class MotSerial(serial.Serial):
         sended = False #etat de l'envoie
         while not sended: #tant que l'envoie n'est pas fait
             rospy.loginfo("etat : " + str(self.busy()))
-            if (self.busy()): #on attend que le port soit libre
+            if not(self.busy()): #on attend que le port soit libre
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
