@@ -32,6 +32,7 @@ class getVitThread(Thread):
             self.__serial.sendGcode("M404 \n") 
             x = self.__serial.readline()#lecture de la reponse
             x = x.decode('utf8') 
+            rospy.loginfo(x)
             data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
             if len(data) == 2: #si la reponse est correcte
                 try : 
