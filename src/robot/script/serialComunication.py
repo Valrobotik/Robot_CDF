@@ -27,7 +27,7 @@ class getVitThread(Thread):
         rospy.spin() #boucle infinie
 
     def getVitesse(self):
-
+        rospy.sleep(1) #attente de la connection
         while True:
             self.__serial.sendGcode("M404 \n") 
             x = self.__serial.readline()#lecture de la reponse
@@ -87,11 +87,13 @@ class requestMotorThread(Thread):
         
         #on set les pid par defaut
         rospy.sleep(0.1)
-        gcode = "M301 P3.2 I0.5 D0.01\n"
+        gcode = "M301 P3.2 I0.5 D0.01 \n"
         self.__serial.sendGcode(gcode)
+        self.__serial.sendGcode("M400 \n")    
         rospy.sleep(0.1)
-        gcode = "M302 P8.5 I0.65 D0.01\n"
+        gcode = "M302 P8.5 I0.65 D0.01 \n"
         self.__serial.sendGcode(gcode)
+        self.__serial.sendGcode("M400 \n")    
         #on attend les requetes
         rospy.spin()
 
@@ -127,7 +129,7 @@ class requestMotorThread(Thread):
 #element de communication serie avec le controleur moteur
 class MotSerial(serial.Serial):
     def __init__(self, serialName):
-        serial.Serial.__init__(self, serialName, 115200, timeout=0.05, dsrdtr=True) #initialisation de la connexion serie
+        serial.Serial.__init__(self, serialName, 115200, timeout=0, dsrdtr=True) #initialisation de la connexion serie
         
         self.__sendserialBusy = False #etat de la connexion
         self.__receipeserialBusy = False #etat de la connexion
