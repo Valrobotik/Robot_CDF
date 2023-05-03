@@ -19,8 +19,8 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 4
-        self.__kia = 0.01
+        self.__kpa = -4
+        self.__kia = -0.01
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
@@ -77,8 +77,10 @@ class position():
         previous_time = time.time()
         while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
-            consigne.angular.x = self.pid_a(self.a - angle)+0.2
+            if consigne.angular.x > 0: consigne.angular.x += 0.2
+            else : consigne.angular.x -= 0.2
             if consigne.angular.x > 1: consigne.angular.x = 1
+            elif consigne.angular.x < -1: consigne.angular.x = -1
             self.pub.publish(consigne)
             time.sleep(0.01)
     
