@@ -29,6 +29,7 @@ class getVitThread(Thread):
         self.__serial.sendGcode("M403 \n") #envoie de la commande M403
         while not rospy.is_shutdown():
             x = self.__serial.readline().decode('utf8') #lecture de la reponse
+            rospy.loginfo(x)
             data = x.replace('(', '').replace(')', '').split(';') #traitement de la reponse
             self.__left = float(data[0]) #recuperation de la vitesse roue gauche
             self.__right = float(data[1]) #recuperation de la vitesse roue droite
