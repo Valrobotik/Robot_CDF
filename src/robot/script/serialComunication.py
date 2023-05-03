@@ -113,7 +113,8 @@ class requestMotorThread(Thread):
 #element de communication serie avec le controleur moteur
 class MotSerial(serial.Serial):
     def __init__(self, serialName):
-        serial.Serial.__init__(self, serialName, 115200, timeout=0) #initialisation de la connexion serie
+        serial.Serial.__init__(self, serialName, 115200, timeout=0, dsrdtr=True) #initialisation de la connexion serie
+        
         self.__sendserialBusy = False #etat de la connexion
         self.__receipeserialBusy = False #etat de la connexion
         
