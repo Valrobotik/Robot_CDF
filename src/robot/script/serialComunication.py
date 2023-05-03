@@ -72,13 +72,13 @@ class requestMotorThread(Thread):
         rospy.Subscriber("server_req", String, self.sendReq)
         
         #on set les pid par defaut
-        rospy.sleep(0.1)
+        """rospy.sleep(0.1)
         gcode = "M301 P3.2 I0.5 D0.01\n"
         self.__serial.sendGcode(gcode)
         rospy.sleep(0.1)
         gcode = "M302 P8.5 I0.65 D0.01\n"
         self.__serial.sendGcode(gcode)
-        #on attend les requetes
+        #on attend les requetes"""
         rospy.spin()
 
     def sendReq(self, req):

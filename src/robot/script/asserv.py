@@ -19,13 +19,13 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = -10
-        self.__kia = -0.01
+        self.__kpa = 4
+        self.__kia = 0.01
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
         self.error_l = 0.1
-        self.error_a = 0.05
+        self.error_a = 0.1
         
         #variables du PID lineaire
         self.__integral_v = 0
@@ -79,7 +79,7 @@ class position():
             consigne.angular.x = self.pid_a(self.a - angle)+0.2
             if consigne.angular.x > 0.8: consigne.angular.x = 0.8
             self.pub.publish(consigne)
-            time.sleep(0.1)
+            time.sleep(0.01)
     
     def translation(self, x, y):
         consigne = Twist()
@@ -92,7 +92,7 @@ class position():
             if consigne.linear.x > 0.8: consigne.linear.x = 0.8
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
-            time.sleep(0.1)
+            time.sleep(0.01)
         
     def pid_v(self, erreur):
         self.__integral_v += erreur*self.__dt
