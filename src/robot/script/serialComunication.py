@@ -28,21 +28,22 @@ class getVitThread(Thread):
 
     def getVitesse(self):
         rospy.sleep(0.1) #attente au demarrage
-        self.__serial.sendGcode("M403 \n") #envoie de la commande M403
-        rospy.sleep(0.05) #attente de la reponse
+        #self.__serial.sendGcode("M403 \n") #envoie de la commande M403
+        #rospy.sleep(0.05) #attente de la reponse
 
         while True:
+            self.__serial.sendGcode("M404 \n") 
+            while self.__serial.inWaiting() == 0: pass #si pas de reponse*
+            rospy.sleep(0.001) #attente de la reponse
             x = self.__serial.readline()#lecture de la reponse
             x = x.decode('utf8') 
-            data = x.replace('(', '').replace(')', '').split(';') #traitement de la reponse
-            if len(data) == 5: #si la reponse est correcte
+            data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
+            if len(data) == 2: #si la reponse est correcte
                 try : 
-                    float(data[0])
-                    if float(data[1]) == 0 and float(data[2]) == 0:
-                        float(data[3])
-                        float(data[4])
-                        self.__left = float(data[3]) #recuperation de la vitesse roue gauche
-                        self.__right = float(data[4]) #recuperation de la vitesse roue droite
+                    float(data[0]) #test de la validite de la reponse
+                    float(data[1])
+                    self.__left = float(data[0]) #recuperation de la vitesse roue gauche
+                    self.__right = float(data[1]) #recuperation de la vitesse roue droite
                 except ValueError:
                     pass
             
