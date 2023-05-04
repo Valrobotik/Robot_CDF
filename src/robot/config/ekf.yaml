@@ -126,7 +126,7 @@ odom0_twist_rejection_threshold: 1
 
 
 imu0: imu_data
-mu0_config: [false, false, false,
+imu0_config: [false, false, false,
               false, false, false,
               false, false, false,
               true,  true,  true,
