@@ -117,12 +117,13 @@ class position():
         consigne.linear.y = 0
         consigne.angular.z = 0
         self.pub.publish(consigne)
-        rospy.sleep(0.1)
+        rospy.sleep(0.05)
     
     def go_to(self, x, y):
-        self.rotation(math.atan2(y, x))
-        self.stop()
-        self.translation(x, y)
+        #self.rotation(math.atan2(y, x))
+        while True :
+            self.stop()
+        #self.translation(x, y)
 
     def go(self, rep):
         if rep.x != None and rep.y != None:
