@@ -80,11 +80,8 @@ class position():
         previous_time = time.time()
         while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
-            if consigne.angular.x > 0: consigne.angular.x += 0.2
-            else : consigne.angular.x -= 0.2
-            if consigne.angular.x > 1: consigne.angular.x = 1
-            elif consigne.angular.x < -1: consigne.angular.x = -1
             self.pub.publish(consigne)
+            consigne.angular.x = self.pid_a(angle - self.a)
             rospy.sleep(0.05)
         self.stop()
     
