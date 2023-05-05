@@ -131,18 +131,14 @@ class position():
         self.pub.publish(consigne)
         rospy.sleep(0.05)
     
-    def go_to(self, x, y):
+    def go_to(self, x, y, a):
         #self.rotation(math.atan2(y, x))
         while True :
-            self.stop()
+            self.rotation(a)
         #self.translation(x, y)
 
     def go(self, rep):
-        if rep.x != None and rep.y != None:
-            self.go_to(rep.x, rep.y)
-        if rep.z != None:
-            self.rotation(rep.z)
-        self.stop()
+        self.go_to(rep.x, rep.y, rep.z)
 
 pos = position()
 rospy.spin()
