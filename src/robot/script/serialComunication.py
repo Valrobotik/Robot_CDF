@@ -155,7 +155,7 @@ class MotSerial(serial.Serial):
                 rospy.sleep(0.1)
 
 #ouverture de la connexion serie
-serialName = rospy.get_param("motor_controller_port", "/dev/ttyACM0")
+serialName = rospy.get_param("motor_controller_port", "/dev/ttyACM1")
 ser = MotSerial(serialName)
 
 #lancement du noeud ROS : serialCon
