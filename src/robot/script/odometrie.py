@@ -57,7 +57,7 @@ class odometrieProcess():
             
             if(self.__localVelocity[0] == -1 and self.__localVelocity[1] == -1): self.__localVelocity = self.__lastlocalVelocity
             if(self.__localVelocity[0] != -1  and self.__localVelocity[1] != -1):
-                rospy.loginfo("dt = %f", dt)
+                rospy.logdebug("dt = %f", dt)
                 if dt > 0:
                     #calcul des vitesses et de la position
                     self.FigureSpeed(dt)
@@ -126,5 +126,5 @@ odomBroadcaster = tf.TransformBroadcaster()
 odometrie = odometrieProcess()
 
 #lancement du filtre de odometrie
-rospy.loginfo("odometrie process starting ...")
+rospy.logdebug("odometrie process starting ...")
 odometrie.start()

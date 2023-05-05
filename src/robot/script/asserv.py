@@ -7,11 +7,12 @@ from nav_msgs.msg import Odometry # type: ignore
 from geometry_msgs.msg import Twist, Vector3
 import math
 from std_msgs.msg import Bool
+from tf.transformations import euler_from_quaternion, quaternion_from_euler # type: ignore
 
 class position():
     def __init__(self) -> None:
         
-        rospy.init_node("asserv")
+        rospy.init_node("asserv", log_level=rospy.INFO)
         
         #constantes du PID lineaire
         self.__kpv = 1
@@ -19,8 +20,8 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = -4
-        self.__kia = -0.01
+        self.__kpa = 0.7/3.14
+        self.__kia = 0.028
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
@@ -67,7 +68,9 @@ class position():
     def odom(self, rep):
         self.x = rep.pose.pose.position.x
         self.y = rep.pose.pose.position.y
-        self.a = rep.pose.pose.orientation.z*math.pi
+        (roll, pitch, yaw) = euler_from_quaternion([rep.pose.pose.orientation.x, rep.pose.pose.orientation.y, rep.pose.pose.orientation.z, rep.pose.pose.orientation.w])
+        self.a = yaw
+        rospy.loginfo("x = %f, y = %f, a = %f", self.x, self.y, self.a)
         
     def rotation(self, angle):
         consigne = Twist()
@@ -105,11 +108,20 @@ class position():
         return(self.__kpv*erreur + self.__kiv*self.__integral_v + self.__kdv*self.__derivative_v)
     
     def pid_a(self, erreur):
-        self.__integral_a += erreur*self.__dt
-        if self.__integral_a > 0.2: self.__integral_a = 0.2
-        self.__derivative_a = (erreur - self.__previous_error_a)/self.__dt
+        temp_integral = self.__integral_a
+        self.__integral_a += erreur*self.__dt*self.__kia
+        self.__proportional_a = self.__kpa*erreur
+        self.__derivative_a = self.__kda*(erreur - self.__previous_error_a)/self.__dt
         self.__previous_error_a = erreur
-        return(self.__kpa*erreur + self.__kia*self.__integral_a + self.__kda*self.__derivative_a)
+        comande = self.__proportional_a + self.__integral_a + self.__derivative_a
+        #saturation avec anti windup
+        if comande > 1:
+            comande = 1
+            self.__integral_a = temp_integral
+        elif comande < -1:
+            comande = -1
+            self.__integral_a = temp_integral
+        return(comande)
     
     def stop(self):
         consigne = Twist()

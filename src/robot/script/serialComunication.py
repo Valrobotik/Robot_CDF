@@ -17,8 +17,8 @@ class getVitThread(Thread):
         Thread.__init__(self) #initialisation du thread
         self.__serial : MotSerial
         self.__serial = serial #serial port
-        self.__left = 0 #vitesse roue gauche
-        self.__right = 0 #vitesse roue droite
+        self.__left = 0 #vitesse lineaire
+        self.__right = 0 #vitesse angulaire
         return
     
     def run(self):
@@ -33,7 +33,6 @@ class getVitThread(Thread):
             rospy.sleep(0.01) #attente de la reponse
             x = self.__serial.readline()#lecture de la reponse
             x = x.decode('utf8') 
-            rospy.loginfo(x)
             data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
             if len(data) == 2: #si la reponse est correcte
                 try : 
@@ -145,50 +144,22 @@ class MotSerial(serial.Serial):
     def sendGcode(self, gcode):
         sended = False #etat de l'envoie
         while not sended: #tant que l'envoie n'est pas fait
-            rospy.loginfo("etat : " + str(self.busy()))
+            rospy.logdebug("etat : " + str(self.busy()))
             if not(self.busy()): #on attend que le port soit libre
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
-                rospy.loginfo("comande out : " + gcode) #on affiche la commande
+                rospy.logdebug("comande out : " + gcode) #on affiche la commande
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
                 rospy.sleep(0.01)
 
-    """def askVitesse(self):
-        gcode = "M404 \n" #commande a envoyer
-        sended = False # on initialise la variable qui permet de savoir si la commande a ete envoyee
-        while not sended: # tant que la commande n'a pas ete envoyee
-            if (not self.busy() and not self.__receipeserialBusy): # on verifie que le port serie n'est pas bloque
-                self.setBusy() # on bloque le port serie pour eviter les conflits
-                self.__receipeserialBusy = True # on bloque le port serie pour eviter les conflits
-                #envoie de la commande
-                self.write(gcode.encode("utf8")) # on envoie la commande recu en parametre
-                rospy.sleep(0.005) #on attend 5ms pour eviter les bugs
-                self.setUnbusy()#on libere le port serie
-                print(gcode)    # on affiche la commande dans la console pour debug
-                sended = True  # on indique que la commande a ete envoyee
-                getit = True    # on initialise la variable qui permet de savoir si la reponse a ete recu
-                rospy.sleep(0.005) # on attend 5ms pour eviter les bugs
-                getime = time.time() # on recupere le temps actuel pour eviter les boucles infinies (Timeout)
-                #reccuperation de la valeur de retour
-                while getit and (time.time() - getime) < 0.05: # tant que la reponse n'a pas ete recu et que le timeout n'est pas atteint
-                    sr = None # on initialise la variable qui contiendra la reponse
-                    if self.inWaiting(): # on verifie que le port serie a recu quelque chose
-                        by = self.readline() # on recupere la reponse
-                        sr=by.decode('utf-8') # on decode la reponse
-                        rospy.loginfo("recep : %s", sr)
-                        getit = False # on verifie que la reponse n'est pas vide
-                self.__receipeserialBusy = False # on debloque le port serie
-        return sr   # on renvoie la reponse (sr est None si la reponse est vide ou si le timeout est atteint)"""
-
-
 #ouverture de la connexion serie
-serialName = rospy.get_param("motor_controller_port", "/dev/ttyACM0")
+serialName = rospy.get_param("motor_controller_port", "/dev/tty0")
 ser = MotSerial(serialName)
 
 #lancement du noeud ROS : serialCon
 rospy.init_node('serialCon', log_level=rospy.INFO)
-rospy.loginfo("serialCon started")
+rospy.logdebug("serialCon started")
 
 # lancement des threads
 posServer = getVitThread(ser)
