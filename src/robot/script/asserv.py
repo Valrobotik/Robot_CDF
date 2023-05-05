@@ -20,8 +20,8 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 0.7/3.14
-        self.__kia = 0.028
+        self.__kpa = -0.7/3.14
+        self.__kia = -0.028
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
@@ -86,6 +86,7 @@ class position():
             elif consigne.angular.x < -1: consigne.angular.x = -1
             self.pub.publish(consigne)
             rospy.sleep(0.05)
+        self.stop()
     
     def translation(self, x, y):
         consigne = Twist()
