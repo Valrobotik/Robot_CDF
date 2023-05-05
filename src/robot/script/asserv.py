@@ -12,7 +12,7 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler # ty
 class position():
     def __init__(self) -> None:
         
-        rospy.init_node("asserv", log_level=rospy.INFO)
+        rospy.init_node("asserv", log_level=rospy.DEBUG)
         
         #constantes du PID lineaire
         self.__kpv = 1
