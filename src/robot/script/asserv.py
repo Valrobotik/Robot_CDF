@@ -70,7 +70,7 @@ class position():
         self.y = rep.pose.pose.position.y
         (roll, pitch, yaw) = euler_from_quaternion([rep.pose.pose.orientation.x, rep.pose.pose.orientation.y, rep.pose.pose.orientation.z, rep.pose.pose.orientation.w])
         self.a = yaw
-        rospy.loginfo("x = %f, y = %f, a = %f", self.x, self.y, self.a)
+        rospy.logdebug("x = %f, y = %f, a = %f", self.x, self.y, self.a)
         
     def rotation(self, angle):
         consigne = Twist()
