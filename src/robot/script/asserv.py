@@ -43,7 +43,7 @@ class position():
         self.x = 0
         self.y = 0
         self.a = 0
-
+        
         #rospy.Subscriber("/odometry/filtered", Odometry, self.odom)
         rospy.Subscriber("/Odom", Odometry, self.odom)
         self.pub = rospy.Publisher("robot_consign", Twist, queue_size=10)
