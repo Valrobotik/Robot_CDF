@@ -187,7 +187,7 @@ rospy.init_node('serialCon', log_level=rospy.INFO)
 rospy.logdebug("serialCon started")
 
 # lancement des threads
-posServer = getVitThread(sendgcode)
+posServer = getVitThread(ser, sendgcode)
 posServer.start()
 
 consServer = setVitConsignThread(sendgcode)
