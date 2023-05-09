@@ -20,8 +20,8 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 1
-        self.__kia = 0.0028
+        self.__kpa = 1.2
+        self.__kia = 0.005
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
