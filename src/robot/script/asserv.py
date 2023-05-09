@@ -77,6 +77,8 @@ class position():
         consigne.linear.x = 0
         consigne.linear.y = 0
         consigne.angular.z = 3
+        self.__integral_a = 0
+        self.__previous_error_a  = angle - self.a
         previous_time = time.time()
         while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
