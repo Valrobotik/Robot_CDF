@@ -35,8 +35,8 @@ class odometrieProcess():
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
             self.__position = [0, 0, 0] #(x, y, theta)
-            self.__maxTicks_v = 2
-            self.__maxTicks_a = 4
+            self.__maxTicks_v = 40
+            self.__maxTicks_a = 40
             
     def start(self):
         dt = 0
