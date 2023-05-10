@@ -29,13 +29,13 @@ class Match():
         while self.__run and not rospy.is_shutdown(): #boucle de match
             goto = Vector3(0,0,0) #(x,y,theta)
             self.__control.publish(goto) #envoi de la commande de controle du robot
-            rospy.sleep(3000)
+            rospy.sleep(7)
             goto = Vector3(0,0,-3.14/2) #(x,y,theta)
             self.__control.publish(goto) #envoi de la commande de controle du robot
-            rospy.sleep(3000)
+            rospy.sleep(7)
             goto = Vector3(0,0,3.14/3) #(x,y,theta)
             self.__control.publish(goto) #envoi de la commande de controle du robot
-            rospy.sleep(3000)
+            rospy.sleep(7)
             
 match = Match() #initialisation du match
 match.run() #lancement 
