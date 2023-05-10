@@ -149,9 +149,9 @@ class position():
     
     def go_to(self):
         while not rospy.is_shutdown():
-            #self.rotation(math.atan2(y, x))
-            #self.rotation(self.go_a)
+            self.rotation(math.atan2(y, x))
             self.translation(self.go_x, self.go_y)
+            self.rotation(self.go_a)
 
     def go(self, rep):
         self.go_x = rep.x
