@@ -35,38 +35,38 @@ class odometrieProcess():
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
             self.__position = [0, 0, 0] #(x, y, theta)
-            self.__maxTicks = 65535
-            self.__maxSafeTicks = 500
-        
+            self.__maxTicks_v = 2
+            self.__maxTicks_a = 4
             
     def start(self):
         dt = 0
         self.__lastTime = rospy.Time.now()
         while(True):
             data = encoders_client() #on récupère les données des encodeurs
-            self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
-            
-            #temps actuel
-            self.__currentTime = rospy.Time.now()
-            
-            #calcul de dt
-            dt =  (self.__currentTime-self.__lastTime).to_sec()
-            
-            #sauvegarde du temps dans une autre variable
-            self.__lastTime = self.__currentTime
-            
-            if(self.__localVelocity[0] == -1 and self.__localVelocity[1] == -1): self.__localVelocity = self.__lastlocalVelocity
-            if(self.__localVelocity[0] != -1  and self.__localVelocity[1] != -1):
-                rospy.logdebug("dt = %f", dt)
-                if dt > 0:
-                    #calcul des vitesses et de la position
-                    self.FigureSpeed(dt)
-                    #envoie des données pour la position estimée
-                    velocityPublisher(self.__position[0], self.__position[1], self.__position[2], 
-                                      self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
-                    
-            self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
-              
+            if data[0] < self.__maxTicks_v or data[1] < self.__maxTicks_a: #on verifie que les valeurs sont correctes
+                self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
+                
+                #temps actuel
+                self.__currentTime = rospy.Time.now()
+                
+                #calcul de dt
+                dt =  (self.__currentTime-self.__lastTime).to_sec()
+                
+                #sauvegarde du temps dans une autre variable
+                self.__lastTime = self.__currentTime
+                
+                if(self.__localVelocity[0] == -1 and self.__localVelocity[1] == -1): self.__localVelocity = self.__lastlocalVelocity
+                if(self.__localVelocity[0] != -1  and self.__localVelocity[1] != -1):
+                    rospy.logdebug("dt = %f", dt)
+                    if dt > 0:
+                        #calcul des vitesses et de la position
+                        self.FigureSpeed(dt)
+                        #envoie des données pour la position estimée
+                        velocityPublisher(self.__position[0], self.__position[1], self.__position[2], 
+                                        self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
+                        
+                self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
+                
     def FigureSpeed(self, dt):
         #calcul de la position à partir des vitesses lineaire et angulaire
         w = self.__localVelocity[1]
