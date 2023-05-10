@@ -89,7 +89,7 @@ class position():
             self.__dt = time.time() - previous_time
             self.pub.publish(consigne)
             consigne.angular.x = self.pid_a(angle - self.a)
-            rospy.sleep(0.05)
+            rospy.sleep(0.02)
         self.stop()
     
     def translation(self, x, y):
