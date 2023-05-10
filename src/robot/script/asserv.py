@@ -15,7 +15,7 @@ class position():
         rospy.init_node("asserv", log_level=rospy.DEBUG)
         
         #constantes du PID lineaire
-        self.__kpv = 1
+        self.__kpv = 0.7
         self.__kiv = 0.001
         self.__kdv = 0
         
@@ -25,7 +25,7 @@ class position():
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
-        self.error_l = 0.1
+        self.error_l = 0.01
         self.error_a = 0.01
         
         #variables du PID lineaire
