@@ -107,11 +107,21 @@ class position():
         self.stop()
         
     def pid_v(self, erreur):
-        self.__integral_v += erreur*self.__dt
-        if self.__integral_v > 0.2: self.__integral_v = 0.2
-        self.__derivative_v = (erreur - self.__previous_error_v)/self.__dt
+        temp_integral = self.__integral_a
+        self.__integral_v += erreur*self.__dt*self.__kiv
+        self.__proportional_v = self.__kpv*erreur
+        self.__derivative_v = self.__kdv*(erreur - self.__previous_error_v)/self.__dt
         self.__previous_error_v = erreur
-        return(self.__kpv*erreur + self.__kiv*self.__integral_v + self.__kdv*self.__derivative_v)
+        comande = self.__proportional_v + self.__integral_v + self.__derivative_v
+        #saturation avec anti windup
+        if comande > 1:
+            comande = 1
+            self.__integral_v = temp_integral
+        elif comande < -1:
+            comande = -1
+            self.__integral_v = temp_integral
+        return(comande)
+    
     
     def pid_a(self, erreur):
         temp_integral = self.__integral_a
@@ -140,8 +150,8 @@ class position():
     def go_to(self):
         while not rospy.is_shutdown():
             #self.rotation(math.atan2(y, x))
-            self.rotation(self.go_a)
-            #self.translation(x, y)
+            #self.rotation(self.go_a)
+            self.translation(self.go_x, self.go_y)
 
     def go(self, rep):
         self.go_x = rep.x
