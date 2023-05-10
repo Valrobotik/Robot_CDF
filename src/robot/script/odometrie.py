@@ -27,7 +27,10 @@ class odometrieProcess():
         self.__position = [0, 0, 0] #(x, y, theta)
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
-        
+    
+        self.__maxTicks_v = 3
+        self.__maxTicks_a = 5
+    
         self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset)
     
     def reset(self, msg: Bool):
@@ -35,15 +38,13 @@ class odometrieProcess():
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
             self.__position = [0, 0, 0] #(x, y, theta)
-            self.__maxTicks_v = 40
-            self.__maxTicks_a = 40
             
     def start(self):
         dt = 0
         self.__lastTime = rospy.Time.now()
         while(True):
             data = encoders_client() #on récupère les données des encodeurs
-            if data[0] < self.__maxTicks_v or data[1] < self.__maxTicks_a: #on verifie que les valeurs sont correctes
+            if data[0] < self.__maxTicks_v and data[1] < self.__maxTicks_a: #on verifie que les valeurs sont correctes
                 self.__localVelocity = [data[0], data[1]] #on enregistre les nouvelles valeurs de vitesse
                 
                 #temps actuel
