@@ -4,7 +4,7 @@ import json
 from typing import Any
 import serial
 import rospy
-from robot.srv import encoders, encodersResponse
+from robot.srv import encoders, encodersResponse # type: ignore
 from threading import Thread
 from geometry_msgs.msg import Twist, Vector3
 import sys

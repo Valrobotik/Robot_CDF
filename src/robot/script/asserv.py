@@ -63,6 +63,10 @@ class position():
             self.x = 0
             self.y = 0
             self.a = 0
+            
+            self.go_a = 0
+            self.go_x = 0
+            self.go_y = 0
         
     
     def odom(self, rep):
@@ -132,14 +136,17 @@ class position():
         self.pub.publish(consigne)
         rospy.sleep(0.1)
     
-    def go_to(self, x, y, a):
-        #self.rotation(math.atan2(y, x))
-        while True :
-            self.rotation(a)
-        #self.translation(x, y)
+    def go_to(self):
+        while not rospy.is_shutdown():
+            #self.rotation(math.atan2(y, x))
+            self.rotation(self.go_a)
+            #self.translation(x, y)
 
     def go(self, rep):
-        self.go_to(rep.x, rep.y, rep.z)
+        self.go_x = rep.x
+        self.go_y = rep.y
+        self.go_a = rep.z
 
 pos = position()
+pos.go_to()
 rospy.spin()
