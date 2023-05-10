@@ -33,7 +33,7 @@ class getVitThread(Thread):
         rospy.sleep(1) #attente de la connection
         while True:
             self.__sendgcode.setM("M404 \n") #envoie de la commande M400
-            timeout = time.time() + 0.3 #timeout de 300ms
+            timeout = time.time() + 0.1 #timeout de 300ms
             while self.__serial.in_waiting == 0 and timeout<time.time(): #tant que la reponse n'est pas recu on attend
                 pass
             rospy.sleep(0.01) #attente de la reponse
@@ -149,7 +149,7 @@ class MotSerial(serial.Serial):
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
-                rospy.sleep(0.02) #on attend 20ms
+                rospy.sleep(0.01) #on attend 20ms
 
 class sendGcodeThread(Thread):
     def __init__(self, serial):
