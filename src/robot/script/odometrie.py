@@ -3,7 +3,7 @@ import rospy
 import time
 import json
 from threading import Thread
-from robot.srv import encoders, encodersResponse
+from robot.srv import encoders, encodersResponse # type: ignore
 from nav_msgs.msg import Odometry # type: ignore
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 import tf # type: ignore
