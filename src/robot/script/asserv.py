@@ -101,7 +101,7 @@ class position():
             self.__dt = time.time() - previous_time
             consigne.linear.x = self.pid_v((x - self.x)**2 + (y - self.y)**2)
             if consigne.linear.x > 0.8: consigne.linear.x = 0.8
-            consigne.angular.x = self.pid_a(-math.atan2(y - self.y, x - self.x)+self.a)
+            consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
             rospy.sleep(0.1)
         self.stop()
@@ -150,8 +150,8 @@ class position():
     def go_to(self):
         while not rospy.is_shutdown():
             #self.rotation(math.atan2(y, x))
-            self.translation(self.go_x, self.go_y)
-            #self.rotation(self.go_a)
+            #self.translation(self.go_x, self.go_y)
+            self.rotation(self.go_a)
 
     def go(self, rep):
         self.go_x = rep.x
