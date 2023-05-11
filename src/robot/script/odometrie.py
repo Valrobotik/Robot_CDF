@@ -72,7 +72,7 @@ class odometrieProcess():
         #calcul de la position à partir des vitesses lineaire et angulaire
         w = self.__localVelocity[1]
         v = self.__localVelocity[0]
-        
+        """
         vx = v*math.cos(self.__position[2])
         vy = v*math.sin(self.__position[2])
 
@@ -94,7 +94,7 @@ class odometrieProcess():
             self.__position[2] += w*dt
         
         self.__position[2] = self.reduceAngle(self.__position[2])
-        """
+        
         pass
     
     def reduceAngle(self, x): 
