@@ -20,7 +20,7 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 5
+        self.__kpa = 3
         self.__kia = 0.1
         self.__kda = 0
         
