@@ -102,7 +102,7 @@ class position():
             if consigne.linear.x > 0.8: consigne.linear.x = 0.8
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
-            rospy.sleep(0.1)
+            rospy.sleep(0.02)
         self.stop()
         
     def pid_v(self, erreur):
