@@ -28,8 +28,8 @@ class odometrieProcess():
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
     
-        self.__maxTicks_v = 3
-        self.__maxTicks_a = 5
+        self.__maxTicks_v = 2
+        self.__maxTicks_a = 3
     
         self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset)
     
