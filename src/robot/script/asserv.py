@@ -101,7 +101,10 @@ class position():
             self.__dt = time.time() - previous_time
             previous_time = time.time()
             consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
-            consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
+            if self.x < x:
+                consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
+            else:
+                consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a-math.pi)
             self.pub.publish(consigne)
             rospy.sleep(0.02)
         self.stop()
