@@ -166,5 +166,4 @@ class position():
         self.go_to()
 
 pos = position()
-pos.go_to()
 rospy.spin()
