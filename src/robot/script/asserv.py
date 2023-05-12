@@ -155,7 +155,7 @@ class position():
             a = math.atan2(self.go_y - self.y, self.go_x - self.x)
         else:
             a = math.atan2(self.go_y - self.y, self.go_x - self.x)-math.pi
-        self.rotation(math.atan2(a))
+        self.rotation(a)
         self.translation(self.go_x, self.go_y)
         self.rotation(self.go_a)
 
