@@ -150,8 +150,15 @@ odomBroadcaster = tf.TransformBroadcaster()
 
 #filtre de odometrie
 odometrie = odometrieProcess()
+odometrie.start()
+
+#thread de publication de l'odometrie
+pub = publisher_Tread()
+pub.start()
+
 
 
 #lancement du filtre de odometrie
 rospy.logdebug("odometrie process starting ...")
-odometrie.start()
+
+rospy.spin() #boucle infinie
