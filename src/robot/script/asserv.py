@@ -101,8 +101,14 @@ class position():
             self.__dt = time.time() - previous_time
             previous_time = time.time()
             consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
-            if self.x > x:
+            err_x = x - self.x
+            err_y = y - self.y
+            abs_x = abs(err_x)
+            abs_y = abs(err_y)
+            if abs_x < 0 and abs_y < 0:
                 consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a-math.pi)
+            elif abs_x < 0:
+                consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a+math.pi)
             else:
                 consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
@@ -151,10 +157,20 @@ class position():
         rospy.sleep(0.1)
     
     def go_to(self):
-        if self.go_x > self.x:
-            a = math.atan2(self.go_y - self.y, self.go_x - self.x)
+        #on calcule a à partir de la position actuelle du robot
+        err_x = self.go_x - self.x
+        err_y = self.go_y - self.y
+        abs_x = abs(err_x)
+        abs_y = abs(err_y)
+        if abs_x < 0.01 and abs_y < 0.01:
+            return
+        if abs_x < 0 and abs_y < 0:
+            a = math.atan2(err_y, err_x) - math.pi
+        elif abs_x < 0:
+            a = math.atan2(err_y, err_x) + math.pi
         else:
-            a = math.atan2(self.go_y - self.y, self.go_x - self.x)-math.pi
+            a = math.atan2(err_y, err_x)
+      
         self.rotation(a)
         self.translation(self.go_x, self.go_y)
         self.rotation(self.go_a)
