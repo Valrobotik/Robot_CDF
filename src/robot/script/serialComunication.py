@@ -33,21 +33,23 @@ class getVitThread(Thread):
         rospy.sleep(1) #attente de la connection
         while True:
             self.__sendgcode.setM("M404 \n") #envoie de la commande M400
-            timeout = time.time() + 0.1 #timeout de 300ms
+            timeout = time.time() + 0.03 #timeout de 10ms
             while self.__serial.in_waiting == 0 and timeout<time.time(): #tant que la reponse n'est pas recu on attend
                 pass
-            rospy.sleep(0.01) #attente de la reponse
-            x = self.__serial.readline()#lecture de la reponse
-            x = x.decode('utf8') 
-            data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
-            if len(data) == 2: #si la reponse est correcte
-                try : 
-                    float(data[0]) #test de la validite de la reponse
-                    float(data[1])
-                    self.__left = float(data[0]) #recuperation de la vitesse roue gauche
-                    self.__right = float(data[1]) #recuperation de la vitesse roue droite
-                except ValueError:
-                    pass
+            if self.__serial.in_waiting != 0: #si le timeout n'est pas depasse
+                rospy.sleep(0.005) #attente de la reponse
+                x = self.__serial.readline()#lecture de la reponse
+                rospy.logdebug("reponse : " + len(x)) #affichage de la reponse
+                x = x.decode('utf8') 
+                data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
+                if len(data) == 2: #si la reponse est correcte
+                    try : 
+                        float(data[0]) #test de la validite de la reponse
+                        float(data[1])
+                        self.__left = float(data[0]) #recuperation de la vitesse roue gauche
+                        self.__right = float(data[1]) #recuperation de la vitesse roue droite
+                    except ValueError:
+                        pass
             
 
     def handle_encoders(self, req):
@@ -141,14 +143,13 @@ class MotSerial(serial.Serial):
     def sendGcode(self, gcode):
         sended = False #etat de l'envoie
         while not sended: #tant que l'envoie n'est pas fait
-            rospy.logdebug("etat : " + str(self.busy()))
             if not(self.busy()): #on attend que le port soit libre
                 self.setBusy() #on bloque le port
                 self.write(gcode.encode("utf8")) #on envoie la commande
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
-                rospy.sleep(0.01) #on attend 20ms
+                rospy.sleep(0.002) #on attend 20ms
 
 class sendGcodeThread(Thread):
     def __init__(self, serial):
@@ -160,13 +161,15 @@ class sendGcodeThread(Thread):
     def run(self):
         while not rospy.is_shutdown():
             if self.__G != "":
-                g  = self.__G
+                g :String = self.__G
                 self.G = ""
-                self.__serial.sendGcode(g)
+                self.__serial.write(g.encode("utf8"))
+                rospy.sleep(0.004) #on attend 4ms
             if self.__M != "":
-                m = self.__M
+                m : String = self.__M
                 self.__M = ""
-                self.__serial.sendGcode(m)
+                self.__serial.write(m.encode("utf8"))
+                rospy.sleep(0.004) #on attend 4ms
                 
     def setG(self, gcode):
         self.__G = gcode
