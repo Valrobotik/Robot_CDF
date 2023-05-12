@@ -22,6 +22,7 @@ class getVitThread(Thread):
         self.__serial = serial #serial port
         self.__left = 0 #vitesse lineaire
         self.__right = 0 #vitesse angulaire
+        self.pub = rospy.Publisher("vit", Vector3, queue_size=10) #initialisation du publisher qui publie la vitesse du robot
         return
     
     def run(self):
@@ -47,6 +48,7 @@ class getVitThread(Thread):
                         float(data[1])
                         self.__left = float(data[0]) #recuperation de la vitesse roue gauche
                         self.__right = float(data[1]) #recuperation de la vitesse roue droite
+                        self.pub.publish(Vector3(self.__left, self.__right, 0)) #publication de la vitesse
                     except ValueError:
                         rospy.logwarn("erreur de lecture des encodeurs : %s", x) #affichage d'une erreur
                         pass

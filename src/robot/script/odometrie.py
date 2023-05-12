@@ -32,7 +32,7 @@ class odometrieProcess():
         self.__maxTicks_a = 3
     
         self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset)
-    
+        
     def reset(self, msg: Bool):
         if msg.data :
             self.__lastTime = rospy.Time.now()
