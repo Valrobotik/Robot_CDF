@@ -99,7 +99,6 @@ class position():
         while abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l:
             self.__dt = time.time() - previous_time
             consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
-            if consigne.linear.x > 0.8: consigne.linear.x = 0.8
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
             rospy.sleep(0.02)
@@ -113,11 +112,11 @@ class position():
         self.__previous_error_v = erreur
         comande = self.__proportional_v + self.__integral_v + self.__derivative_v
         #saturation avec anti windup
-        if comande > 1:
-            comande = 1
+        if comande > 0.8:
+            comande = 0.8
             self.__integral_v = temp_integral
-        elif comande < -1:
-            comande = -1
+        elif comande < -0.8:
+            comande = -0.8
             self.__integral_v = temp_integral
         return(comande)
     
