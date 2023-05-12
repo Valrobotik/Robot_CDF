@@ -185,7 +185,7 @@ sendgcode = sendGcodeThread(ser)
 sendgcode.start()
 
 #lancement du noeud ROS : serialCon
-rospy.init_node('serialCon', log_level=rospy.INFO)
+rospy.init_node('serialCon', log_level=rospy.WARN)
 rospy.logdebug("serialCon started")
 
 # lancement des threads
