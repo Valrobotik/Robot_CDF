@@ -151,6 +151,10 @@ class position():
         rospy.sleep(0.1)
     
     def go_to(self):
+        if self.go_x > self.x:
+            a = math.atan2(self.go_y - self.y, self.go_x - self.x)
+        else:
+            a = math.atan2(self.go_y - self.y, self.go_x - self.x)-math.pi
         self.rotation(math.atan2(self.go_y - self.y, self.go_x - self.x)-self.a)
         self.translation(self.go_x, self.go_y)
         self.rotation(self.go_a)
