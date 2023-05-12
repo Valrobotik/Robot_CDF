@@ -39,7 +39,6 @@ class getVitThread(Thread):
             if self.__serial.in_waiting != 0: #si le timeout n'est pas depasse
                 rospy.sleep(0.005) #attente de la reponse
                 x = self.__serial.readline()#lecture de la reponse
-                rospy.logdebug("reponse : " + len(x)) #affichage de la reponse
                 x = x.decode('utf8') 
                 data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
                 if len(data) == 2: #si la reponse est correcte
@@ -49,7 +48,7 @@ class getVitThread(Thread):
                         self.__left = float(data[0]) #recuperation de la vitesse roue gauche
                         self.__right = float(data[1]) #recuperation de la vitesse roue droite
                     except ValueError:
-                        rospy.logwarn("erreur de lecture des encodeurs") #affichage d'une erreur
+                        rospy.logwarn("erreur de lecture des encodeurs : %s", x) #affichage d'une erreur
                         pass
             
 
