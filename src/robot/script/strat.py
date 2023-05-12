@@ -26,7 +26,7 @@ class Match():
                 
     def run(self):
         rospy.loginfo("match start")
-        rospy.sleep(5)
+        rospy.sleep(10)
         while self.__run and not rospy.is_shutdown(): #boucle de match
             goto = Vector3(1,1,3.14/2) #(x,y,theta)
             self.__control.publish(goto) #envoi de la commande de controle du robot
