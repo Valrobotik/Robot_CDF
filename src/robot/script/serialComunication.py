@@ -49,6 +49,7 @@ class getVitThread(Thread):
                         self.__left = float(data[0]) #recuperation de la vitesse roue gauche
                         self.__right = float(data[1]) #recuperation de la vitesse roue droite
                     except ValueError:
+                        rospy.logwarn("erreur de lecture des encodeurs") #affichage d'une erreur
                         pass
             
 
