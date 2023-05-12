@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any
 import rospy
 import time
 import json
@@ -11,12 +13,22 @@ import sys
 import math
 from tf.transformations import quaternion_from_euler # type: ignore
 from std_msgs.msg import Bool
+from threading import Thread
 #lecture fichier de config
 
-
-class odometrieProcess():
+class publisher_Tread(Thread):
     def __init__(self):
-        
+        super().__init__()
+    def run(self):
+        global message
+        while not rospy.is_shutdown():
+            rospy.sleep(0.01)
+            if message != None:
+                odomPub.publish(message)
+
+class odometrieProcess(Thread):
+    def __init__(self):
+        super().__init__()
         self.__d = 274.4
         self.__r = 32
         self.__tpr = 1000
@@ -39,7 +51,7 @@ class odometrieProcess():
             self.__currentTime = rospy.Time.now()
             self.__position = [0, 0, 0] #(x, y, theta)
             
-    def start(self):
+    def run(self):
         dt = 0
         self.__lastTime = rospy.Time.now()
         while(True):
@@ -100,9 +112,9 @@ class odometrieProcess():
     def reduceAngle(self, x): 
         a = math.fmod(x, 2*math.pi)
         return a
-        
+       
 def velocityPublisher(x, y, th, v, w, t):
-    
+    global message
     odomQuat = quaternion_from_euler(0, 0, th)
 
     message = Odometry()
@@ -114,8 +126,6 @@ def velocityPublisher(x, y, th, v, w, t):
     vy = v*math.sin(th)
     message.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, w))
     #print(message)
-    
-    odomPub.publish(message)
     pass
 
 def encoders_client():
@@ -125,6 +135,9 @@ def encoders_client():
     rep = get_encoders(cmd)
     return (rep.left, rep.right)
 
+
+
+message : Odometry = None
 
 #initialisation du noeud
 rospy.init_node("odometrie", log_level=rospy.INFO)
@@ -137,6 +150,7 @@ odomBroadcaster = tf.TransformBroadcaster()
 
 #filtre de odometrie
 odometrie = odometrieProcess()
+
 
 #lancement du filtre de odometrie
 rospy.logdebug("odometrie process starting ...")
