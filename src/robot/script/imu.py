@@ -4,8 +4,8 @@
 # Path: Valrob_pkg\script\imu.py
 # recupere les donees de l'IMU et les publie sur le topic imu_data
 
-import rospy
-from geometry_msgs.msg import Twist, Vector3, Quaternion
+import rospy # type: ignore
+from geometry_msgs.msg import Twist, Vector3, Quaternion # type: ignore
 from BMI160_i2c import Driver # type: ignore
 from sensor_msgs.msg import Imu # type: ignore
 import math

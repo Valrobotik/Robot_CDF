@@ -4,8 +4,8 @@
 # Path: Valrob_pkg\script\test_node.py
 # test de la communication serie avec la carte de controle des moteurs du robot
 
-import rospy
-from geometry_msgs.msg import Twist, Vector3
+import rospy # type: ignore
+from geometry_msgs.msg import Twist, Vector3# type: ignore
 from robot.srv import encoders, encodersResponse 
 from threading import Thread
 import time
