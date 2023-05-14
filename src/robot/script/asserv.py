@@ -177,7 +177,6 @@ class position():
         consigne.linear.y = 0
         consigne.angular.z = 0
         self.pub.publish(consigne)
-        rospy.sleep(0.1)
     
     def go_to(self):
         #on calcule a à partir de la position actuelle du robot
