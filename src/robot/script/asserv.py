@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #asservicement en position du robot
 
-import rospy
+import rospy# type: ignore
 import time
 from nav_msgs.msg import Odometry # type: ignore
-from geometry_msgs.msg import Twist, Vector3
+from geometry_msgs.msg import Twist, Vector3# type: ignore
 import math
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool# type: ignore
 from tf.transformations import euler_from_quaternion, quaternion_from_euler # type: ignore
 
 class position():
@@ -105,24 +105,45 @@ class position():
             err_y = y - self.y
             abs_x = abs(err_x)
             abs_y = abs(err_y)
-            if abs_x < 0 and abs_y < 0:
-                consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a-math.pi)
-            elif abs_x < 0:
-                consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a+math.pi)
-            else:
-                consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
+            #calcul de l'angle a atteindre en fonction de la position du point
+            if err_x > 0.001 and err_y > 0:
+                angle = math.atan(abs_y/abs_x)
+            elif err_x > 0.001 and err_y < 0:
+                angle = -math.atan(abs_y/abs_x)
+            elif err_x < -0.001 and err_y > 0:
+                angle = math.pi - math.atan(abs_y/abs_x)
+            elif err_x < -0.001 and err_y < 0:
+                angle = math.pi + math.atan(abs_y/abs_x)
+            elif err_y > 0:
+                angle = math.pi/2
+            elif err_y < 0:
+                angle = -math.pi/2
+            angle = self.mod_2pi(angle)
+            consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a))
             self.pub.publish(consigne)
             rospy.sleep(0.02)
         self.stop()
         
+    def mod_2pi(self, angle):
+        while angle > math.pi:
+            angle -= 2*math.pi
+        while angle < -math.pi:
+            angle += 2*math.pi
+        return(angle)
+        
+
     def pid_v(self, erreur):
-        temp_integral = self.__integral_a
+        # the integral term of the PID
+        temp_integral = self.__integral_v
         self.__integral_v += erreur*self.__dt*self.__kiv
+        # the proportional term of the PID
         self.__proportional_v = self.__kpv*erreur
+        # the derivative term of the PID
         self.__derivative_v = self.__kdv*(erreur - self.__previous_error_v)/self.__dt
         self.__previous_error_v = erreur
+        # the final PID command
         comande = self.__proportional_v + self.__integral_v + self.__derivative_v
-        #saturation avec anti windup
+        # saturation with anti windup
         if comande > 0.8:
             comande = 0.8
             self.__integral_v = temp_integral
@@ -130,10 +151,11 @@ class position():
             comande = -0.8
             self.__integral_v = temp_integral
         return(comande)
+
     
     
     def pid_a(self, erreur):
-        temp_integral = self.__integral_a
+        temp_integral_a = self.__integral_a
         self.__integral_a += erreur*self.__dt*self.__kia
         self.__proportional_a = self.__kpa*erreur
         self.__derivative_a = self.__kda*(erreur - self.__previous_error_a)/self.__dt
@@ -142,10 +164,10 @@ class position():
         #saturation avec anti windup
         if comande > 1:
             comande = 1
-            self.__integral_a = temp_integral
+            self.__integral_a = temp_integral_a
         elif comande < -1:
             comande = -1
-            self.__integral_a = temp_integral
+            self.__integral_a = temp_integral_a
         return(comande)
     
     def stop(self):
@@ -162,16 +184,20 @@ class position():
         err_y = self.go_y - self.y
         abs_x = abs(err_x)
         abs_y = abs(err_y)
-        if abs_x < 0.01 and abs_y < 0.01:
-            return
-        if abs_x < 0 and abs_y < 0:
-            a = math.atan2(err_y, err_x) - math.pi
-        elif abs_x < 0:
-            a = math.atan2(err_y, err_x) + math.pi
-        else:
-            a = math.atan2(err_y, err_x)
-      
-        self.rotation(a)
+        if err_x > 0.001 and err_y > 0:
+            angle = math.atan(abs_y/abs_x)
+        elif err_x > 0.001 and err_y < 0:
+            angle = -math.atan(abs_y/abs_x)
+        elif err_x < -0.001 and err_y > 0:
+            angle = math.pi - math.atan(abs_y/abs_x)
+        elif err_x < -0.001 and err_y < 0:
+            angle = math.pi + math.atan(abs_y/abs_x)
+        elif err_y > 0:
+            angle = math.pi/2
+        elif err_y < 0:
+            angle = -math.pi/2
+        angle = self.mod_2pi(angle)
+        self.rotation(angle)
         self.translation(self.go_x, self.go_y)
         self.rotation(self.go_a)
 

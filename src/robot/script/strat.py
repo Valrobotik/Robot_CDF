@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import rospy
-from std_msgs.msg import Bool
-from geometry_msgs.msg import Vector3
+import rospy # type: ignore
+from std_msgs.msg import Bool# type: ignore
+from geometry_msgs.msg import Vector3# type: ignore
 
 class Match():
     def __init__(self) -> None:

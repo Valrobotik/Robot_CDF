@@ -3,18 +3,19 @@ from collections.abc import Callable, Iterable, Mapping
 import json
 from typing import Any
 import serial
-import rospy
+import rospy# type: ignore
 from robot.srv import encoders, encodersResponse # type: ignore
 from threading import Thread
-from geometry_msgs.msg import Twist, Vector3
+from geometry_msgs.msg import Twist, Vector3# type: ignore
 import sys
 import time
-from std_msgs.msg import String, Bool
+from std_msgs.msg import String, Bool# type: ignore
 
-    
+
 
 # thread de recuperation de la vitesse lineaire et angulaire
 class getVitThread(Thread): 
+    
     def __init__(self, serial, moteur_send):
         Thread.__init__(self) #initialisation du thread
         self.__serial : MotSerial
