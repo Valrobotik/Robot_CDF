@@ -108,16 +108,16 @@ class position():
             angle = 0
             #calcul de l'angle a atteindre en fonction de la position du point
             if err_x > 0.001 and err_y > 0:
-                angle = math.atan(abs_y/abs_x)
+                angle = math.atan2(abs_y,abs_x)
             elif err_x > 0.001 and err_y < 0:
-                angle = -math.atan(abs_y/abs_x)
+                angle = -math.atan2(abs_y,abs_x)
             elif err_x < -0.001 and err_y > 0:
-                angle = math.pi - math.atan(abs_y/abs_x)
+                angle = math.pi - math.atan2(abs_y,abs_x)
             elif err_x < -0.001 and err_y < 0:
-                angle = math.pi + math.atan(abs_y/abs_x)
-            elif err_y > 0:
+                angle = math.pi + math.atan2(abs_y,abs_x)
+            elif err_x > 0:
                 angle = math.pi/2
-            elif err_y < 0:
+            elif err_x < 0:
                 angle = -math.pi/2
             angle = self.mod_2pi(angle)
             consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a))
@@ -186,13 +186,13 @@ class position():
         abs_y = abs(err_y)
         angle = 0
         if err_x > 0.001 and err_y > 0:
-            angle = math.atan(abs_y/abs_x)
+            angle = math.atan2(abs_y,abs_x)
         elif err_x > 0.001 and err_y < 0:
-            angle = -math.atan(abs_y/abs_x)
+            angle = -math.atan2(abs_y,abs_x)
         elif err_x < -0.001 and err_y > 0:
-            angle = math.pi - math.atan(abs_y/abs_x)
+            angle = math.pi - math.atan2(abs_y,abs_x)
         elif err_x < -0.001 and err_y < 0:
-            angle = math.pi + math.atan(abs_y/abs_x)
+            angle = math.pi + math.atan2(abs_y,abs_x)
         elif err_y > 0:
             angle = math.pi/2
         elif err_y < 0:
