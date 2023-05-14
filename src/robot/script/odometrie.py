@@ -35,8 +35,8 @@ class odometrieProcess(Thread):
         self.__lastTime = 0
         self.__currentTime = 0
         self.__localVelocity = [-1, -1] #(vx, w)
-        self.__lastlocalVelocity = [0, 0]
-        self.__position = [0, 0, 0] #(x, y, theta)
+        self.__lastlocalVelocity = [.0, .0]
+        self.__position = [.0, .0, .0] #(x, y, theta)
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
     
@@ -82,21 +82,20 @@ class odometrieProcess(Thread):
                 
     def FigureSpeed(self, dt):
         #calcul de la position à partir des vitesses lineaire et angulaire
-        w = self.__localVelocity[1]
-        v = self.__localVelocity[0]
+        w : float = self.__localVelocity[1]
+        v : float = self.__localVelocity[0]
 
         #calcul de la position en cas de vitesse angulaire nulle
         if abs(w) < 0.01:
             self.__position[0] += v*dt*math.cos(self.__position[2])
             self.__position[1] += v*dt*math.sin(self.__position[2])
             self.__position[2] += w*dt
-        #calcul de la position en cas de vitesse angulaire non nulle
         else:
-            self.__position[0] += (v/w)*(math.sin(self.__position[2] + w*dt) - math.sin(self.__position[2]))
-            self.__position[1] += (v/w)*(math.cos(self.__position[2] + w*dt) + math.cos(self.__position[2]))
+            self.__position[0] += (v/w)*(math.sin(self.__position[2] + w*dt) - math.sin(self.__position[2]))# type: ignore
+            self.__position[1] += (v/w)*(math.cos(self.__position[2] + w*dt) + math.cos(self.__position[2])) # type: ignore
             self.__position[2] += w*dt
         
-        self.__position[2] = self.reduceAngle(self.__position[2])
+        self.__position[2] = self.reduceAngle(self.__position[2])# type: ignore
         
     
     def reduceAngle(self, x): 

@@ -2,7 +2,7 @@
 from collections.abc import Callable, Iterable, Mapping
 import json
 from typing import Any
-import serial
+import serial # type: ignore
 import rospy# type: ignore
 from robot.srv import encoders, encodersResponse # type: ignore
 from threading import Thread
@@ -164,12 +164,12 @@ class sendGcodeThread(Thread):
     def run(self):
         while not rospy.is_shutdown():
             if self.__G != "":
-                g :String = self.__G
+                g :str = self.__G
                 self.G = ""
                 self.__serial.write(g.encode("utf8"))
                 rospy.sleep(0.004) #on attend 4ms
             if self.__M != "":
-                m : String = self.__M
+                m : str = self.__M
                 self.__M = ""
                 self.__serial.write(m.encode("utf8"))
                 rospy.sleep(0.004) #on attend 4ms

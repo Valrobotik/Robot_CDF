@@ -6,7 +6,7 @@
 
 import rospy # type: ignore
 from geometry_msgs.msg import Twist, Vector3# type: ignore
-from robot.srv import encoders, encodersResponse 
+from robot.srv import encoders, encodersResponse # type: ignore
 from threading import Thread
 import time
 

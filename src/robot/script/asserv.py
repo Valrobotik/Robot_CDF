@@ -105,6 +105,7 @@ class position():
             err_y = y - self.y
             abs_x = abs(err_x)
             abs_y = abs(err_y)
+            angle = 0
             #calcul de l'angle a atteindre en fonction de la position du point
             if err_x > 0.001 and err_y > 0:
                 angle = math.atan(abs_y/abs_x)
@@ -184,6 +185,7 @@ class position():
         err_y = self.go_y - self.y
         abs_x = abs(err_x)
         abs_y = abs(err_y)
+        angle = 0
         if err_x > 0.001 and err_y > 0:
             angle = math.atan(abs_y/abs_x)
         elif err_x > 0.001 and err_y < 0:
