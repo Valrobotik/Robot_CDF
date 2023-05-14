@@ -84,30 +84,20 @@ class odometrieProcess(Thread):
         #calcul de la position à partir des vitesses lineaire et angulaire
         w = self.__localVelocity[1]
         v = self.__localVelocity[0]
-        """
-        vx = v*math.cos(self.__position[2])
-        vy = v*math.sin(self.__position[2])
 
-        dx = vx*dt
-        dy = vy*dt
-        dth = w*dt
-
-        self.__position[0]+=dx
-        self.__position[1]+=dy
-        self.__position[2] = self.reduceAngle(self.__position[2] + dth)
-        """
+        #calcul de la position en cas de vitesse angulaire nulle
         if abs(w) < 0.01:
             self.__position[0] += v*dt*math.cos(self.__position[2])
             self.__position[1] += v*dt*math.sin(self.__position[2])
             self.__position[2] += w*dt
+        #calcul de la position en cas de vitesse angulaire non nulle
         else:
             self.__position[0] += (v/w)*(math.sin(self.__position[2] + w*dt) - math.sin(self.__position[2]))
-            self.__position[1] += (v/w)*(math.cos(self.__position[2]) - math.cos(self.__position[2] + w*dt))
+            self.__position[1] += (v/w)*(math.cos(self.__position[2] + w*dt) + math.cos(self.__position[2]))
             self.__position[2] += w*dt
         
         self.__position[2] = self.reduceAngle(self.__position[2])
         
-        pass
     
     def reduceAngle(self, x): 
         a = math.fmod(x, 2*math.pi)
