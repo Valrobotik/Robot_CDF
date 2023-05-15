@@ -37,7 +37,7 @@ class position():
         
         self.__dt = 0
         
-        self.__action = False
+        self.__action = True
         
         #position du robot
         self.x = 0
@@ -47,13 +47,14 @@ class position():
         self.go_a = 0
         self.go_x = 0
         self.go_y = 0
-            
+        
+        self.__list_ordre = []
         #rospy.Subscriber("/odometry/filtered", Odometry, self.odom)
         rospy.Subscriber("/Odom", Odometry, self.odom)
         self.pub = rospy.Publisher("robot_consign", Twist, queue_size=10)
         rospy.Subscriber("go", Vector3, self.go)
         rospy.Subscriber("reset_all", Bool, self.reset)
-    
+        rospy.Subscriber("break", Bool, self.break_)
     def reset(self, rep:Bool):
         if rep.data:
             self.__integral_v = 0
@@ -61,12 +62,17 @@ class position():
             self.__previous_error_v = 0
             self.__previous_error_a = 0
             self.__dt = 0
-            self.__action = False
+            self.__action = True
             
             #position du robot
             self.x = 0
             self.y = 0
             self.a = 0
+
+    def break_(self, rep:Bool):
+        if rep.data:
+            self.__list_ordre = []
+            self.__action = False
             
         
     
@@ -84,25 +90,24 @@ class position():
         self.__integral_a = 0
         self.__previous_error_a  = angle - self.a
         previous_time = time.time()
-        while abs(self.a - angle) > self.error_a:
+        while abs(self.a - angle) > self.error_a and self.__action:
             self.__dt = time.time() - previous_time
             previous_time = time.time()
             consigne.angular.x = self.pid_a(angle - self.a)
             self.pub.publish(consigne)
             rospy.sleep(0.02)
-        self.stop()
     
     def translation(self, x, y):
         consigne = Twist()
         consigne.linear.y = 0
         consigne.angular.z = 3
         previous_time = time.time()
-        while abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l:
+        while (abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l) and self.__action:
             self.__dt = time.time() - previous_time
             previous_time = time.time()
-            consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
             err_x = x - self.x
             err_y = y - self.y
+            
             abs_x = abs(err_x)
             abs_y = abs(err_y)
             angle = 0
@@ -120,10 +125,18 @@ class position():
             elif err_x < 0:
                 angle = -math.pi/2
             angle = self.mod_2pi(angle)
-            consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a))
+            err_a = self.mod_2pi(angle - self.a)
+
+            if abs(err_a) > math.pi/2:
+                err_a = self.mod_2pi(err_a + math.pi)
+                signe = -1
+            else:
+                signe = 1
+            consigne.angular.z = self.pid_a(err_a)
+            consigne.linear.x = self.pid_v(signe*math.sqrt(err_x**2 + err_y**2))
+
             self.pub.publish(consigne)
             rospy.sleep(0.02)
-        self.stop()
         
     def mod_2pi(self, angle):
         while angle > math.pi:
@@ -201,12 +214,22 @@ class position():
         self.rotation(angle)
         self.translation(self.go_x, self.go_y)
         self.rotation(self.go_a)
+        self.stop()
 
     def go(self, rep):
-        self.go_x = rep.x
-        self.go_y = rep.y
-        self.go_a = rep.z
-        self.go_to()
-
+        self.__list_ordre.append(rep)
+    
+    def go_to_list(self):
+        while not rospy.is_shutdown():
+            if len(self.__list_ordre) > 0:
+                self.go_x = self.__list_ordre[0].x
+                self.go_y = self.__list_ordre[0].y
+                self.go_a = self.__list_ordre[0].z
+                self.go_to()
+                self.__list_ordre.pop(0)
+            else:
+                self.stop()
+                self.__action = True
+                
 pos = position()
-rospy.spin()
+pos.go_to_list()
