@@ -119,7 +119,6 @@ class position():
         consigne.linear.y = 0
         consigne.angular.z = 3
         previous_time = time.time()
-        rate = rospy.Rate(self.__freq_aserv)
         while (abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l) and self.__action:
             #boucle d'asservissement
             self.__dt = time.time() - previous_time
@@ -148,19 +147,15 @@ class position():
                 angle = -math.pi/2
             angle = self.mod_2pi(angle)
             err_a = self.mod_2pi(angle - self.a)
-
+            rospy.logdebug("angle : " + str(angle) + " err_a : " + str(err_a))
             #on verifie que l'angle a atteindre n'est pas trop grand (sinon on fais marche arriere)
-            if abs(err_a) > math.pi/2:
-                #err_a = self.mod_2pi(err_a + math.pi)
-                signe = 1
-            else:
-                signe = 1
             
+
             #calcul de la consigne
             consigne.angular.z = self.pid_a(err_a)
-            consigne.linear.x = self.pid_v(signe*math.sqrt(err_x**2 + err_y**2))
+            consigne.linear.x = self.pid_v(math.sqrt(err_x**2 + err_y**2))
             self.pub.publish(consigne) #publication de la consigne
-            rate.sleep() #attente de la boucle de publication à 50Hz
+            rospy.sleep(0.02) #attente de la boucle de publication à 50Hz
         
     def mod_2pi(self, angle):
         """fonction qui ramene un angle entre -pi et pi"""
