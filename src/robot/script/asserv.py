@@ -22,13 +22,13 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 3
+        self.__kpa = 5
         self.__kia = 0.1
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
         self.error_l = 0.01
-        self.error_a = 0.01
+        self.error_a = 0.05
 
         #frequence d'asservissement
         self.__freq_aserv = 50
@@ -244,8 +244,10 @@ class position():
         angle = self.mod_2pi(angle)
 
         #on initialise une rotation pour se mettre dans la bonne direction
+        rospy.logdebug("go angle : %f", angle)
         self.rotation(angle)
         #on avance jusqu'au point voulu
+        rospy.logdebug("go distance : %f", math.sqrt(err_x**2 + err_y**2))
         self.translation(self.go_x, self.go_y)
         if self.go_a != None: #si on a une orientation final a atteindre on l'atteint
             self.rotation(self.go_a)
