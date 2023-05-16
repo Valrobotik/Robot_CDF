@@ -19,12 +19,13 @@ from threading import Thread
 class publisher_Tread(Thread):
     def __init__(self):
         super().__init__()
+        self.rate = rospy.Rate(30) #100Hz
     def run(self):
         global message
         while not rospy.is_shutdown():
-            rospy.sleep(0.01)
             if message != None:
                 odomPub.publish(message)
+            self.rate.sleep()
 
 class position():
     x :float = 0
@@ -103,14 +104,11 @@ class odometrieProcess(Thread):
         return a
        
 def prepare_velocity(pos : position, v:float, w:float, t:rospy.Time):
+    """Prepare the velocity message to be published"""
     global message
     odomQuat = quaternion_from_euler(0, 0, pos.theta)
-
-    message = Odometry()
     message.header.stamp = t
-    message.header.frame_id = "odom"
     message.pose.pose = Pose(Point(pos.x, pos.y, 0), Quaternion(*odomQuat))
-    message.child_frame_id = "base_link"
     vx = v*math.cos(pos.theta)
     vy = v*math.sin(pos.theta)
     message.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, w))
@@ -126,7 +124,10 @@ def encoders_client():
 
 
 
-message : Odometry = None
+message = Odometry()
+message.header.stamp = 0
+message.header.frame_id = "odom"
+message.child_frame_id = "base_link"
 
 #initialisation du noeud
 rospy.init_node("odometrie", log_level=rospy.INFO)
