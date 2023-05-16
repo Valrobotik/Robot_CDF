@@ -101,14 +101,14 @@ class position():
         consigne.linear.y = 0
         consigne.angular.z = 3
         self.__integral_a = 0
-        self.__previous_error_a  = angle - self.a
+        self.__previous_error_a  = self.mod_2pi(angle - self.a)
         previous_time = time.time()
         rate = rospy.Rate(self.__freq_aserv)
-        while abs(self.a - angle) > self.error_a and self.__action:
+        while abs(self.mod_2pi(angle - self.a)) > self.error_a and self.__action:
             #boucle d'asservissement
             self.__dt = time.time() - previous_time
             previous_time = time.time()
-            consigne.angular.x = self.pid_a(angle - self.a) #calcul de la consigne angulaire
+            consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a)) #calcul de la consigne angulaire
             self.pub.publish(consigne) #publication de la consigne
             rate.sleep() #attente de la boucle de publication à 50Hz 
     
