@@ -28,7 +28,7 @@ class position():
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
         self.error_l = 0.01
-        self.error_a = 0.1
+        self.error_a = 0.01
 
         #frequence d'asservissement
         self.__freq_aserv = 50
