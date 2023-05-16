@@ -88,8 +88,8 @@ class odometrieProcess(Thread):
                 
     def FigureSpeed(self, dt):
         #calcul de la position à partir des vitesses lineaire et angulaire
-        w : float = (self.__localVelocity[1]+self.__lastlocalVelocity[1])/2 # on utiliseras la methode des trapezes pour intergrer la vitesse angulaire
-        v : float = (self.__localVelocity[0]+self.__lastlocalVelocity[0])/2 # on utiliseras la methode des trapezes pour intergrer la vitesse lineaire
+        w : float = self.__localVelocity[1] # on utiliseras la methode des trapezes pour intergrer la vitesse angulaire
+        v : float = self.__localVelocity[0] # on utiliseras la methode des trapezes pour intergrer la vitesse lineaire
 
         #calcul de la position en cas de vitesse angulaire nulle
         if abs(w) < 0.01: #lorque la vitesse angulaire est nulle on utilise une aproximtion du deplacement par des droites
