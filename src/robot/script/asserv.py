@@ -110,7 +110,7 @@ class position():
             previous_time = time.time()
             consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a)) #calcul de la consigne angulaire
             self.pub.publish(consigne) #publication de la consigne
-            rospy.sleep(1/self.__freq_aserv) #attente de la frequence d'asservissement
+            #rospy.sleep(1/self.__freq_aserv) #attente de la frequence d'asservissement
     
     def translation(self, x, y):
         """deplacement du robot vers le point voulu (position absolue (x,y) en m)"""
