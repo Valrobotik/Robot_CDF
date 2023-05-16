@@ -91,6 +91,7 @@ class position():
         self.y = rep.pose.pose.position.y
         (roll, pitch, yaw) = euler_from_quaternion([rep.pose.pose.orientation.x, rep.pose.pose.orientation.y, rep.pose.pose.orientation.z, rep.pose.pose.orientation.w])
         self.a = self.mod_2pi(yaw) #angle entre -pi et pi
+        rospy.logdebug("x = %f, y = %f, a = %f", self.x, self.y, self.a)
         
     def rotation(self, angle):
         """rotation du robot vers l'angle voulu (position absolue en radian)"""
@@ -238,10 +239,10 @@ class position():
         angle = self.mod_2pi(angle)
 
         #on initialise une rotation pour se mettre dans la bonne direction
-        rospy.logdebug("go angle : %f", angle)
+        #rospy.logdebug("go angle : %f", angle)
         self.rotation(angle)
         #on avance jusqu'au point voulu
-        rospy.logdebug("go distance : %f", math.sqrt(err_x**2 + err_y**2))
+        #rospy.logdebug("go distance : %f", math.sqrt(err_x**2 + err_y**2))
         self.translation(self.go_x, self.go_y)
         if self.go_a != None: #si on a une orientation final a atteindre on l'atteint
             self.rotation(self.go_a)
