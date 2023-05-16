@@ -22,7 +22,7 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 5
+        self.__kpa = 3
         self.__kia = 0.1
         self.__kda = 0
         
@@ -104,14 +104,13 @@ class position():
         self.__integral_a = 0
         self.__previous_error_a  = self.mod_2pi(angle - self.a)
         previous_time = time.time()
-        rate = rospy.Rate(self.__freq_aserv)
         while abs(self.mod_2pi(angle - self.a)) > self.error_a and self.__action:
             #boucle d'asservissement
             self.__dt = time.time() - previous_time
             previous_time = time.time()
             consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a)) #calcul de la consigne angulaire
             self.pub.publish(consigne) #publication de la consigne
-            rate.sleep() #attente de la boucle de publication à 50Hz 
+            rospy.sleep(1/self.__freq_aserv) #attente de la frequence d'asservissement
     
     def translation(self, x, y):
         """deplacement du robot vers le point voulu (position absolue (x,y) en m)"""
