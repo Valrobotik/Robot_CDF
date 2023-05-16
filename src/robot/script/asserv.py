@@ -239,7 +239,7 @@ class position():
 
         #on initialise une rotation pour se mettre dans la bonne direction
         #rospy.logdebug("go angle : %f", angle)
-        self.rotation(angle)
+        #self.rotation(angle)
         #on avance jusqu'au point voulu
         #rospy.logdebug("go distance : %f", math.sqrt(err_x**2 + err_y**2))
         #self.translation(self.go_x, self.go_y)
