@@ -241,3 +241,4 @@ class position():
                 
 pos = position()
 pos.go_to_list()
+rospy.spin()
