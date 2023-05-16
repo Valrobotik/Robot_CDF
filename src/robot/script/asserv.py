@@ -90,7 +90,7 @@ class position():
         self.x = rep.pose.pose.position.x
         self.y = rep.pose.pose.position.y
         (roll, pitch, yaw) = euler_from_quaternion([rep.pose.pose.orientation.x, rep.pose.pose.orientation.y, rep.pose.pose.orientation.z, rep.pose.pose.orientation.w])
-        self.a = self.mod_2pi(yaw) #angle entre -pi et pi
+        self.a = yaw #angle entre -pi et pi
         rospy.logdebug("x = %f, y = %f, a = %f", self.x, self.y, self.a)
         
     def rotation(self, angle):
