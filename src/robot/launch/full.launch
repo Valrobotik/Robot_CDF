@@ -6,5 +6,6 @@
     </node>
     <node pkg="robot" name="imu" type="imu.py"></node>
     <node pkg="robot" name="asserv" type="asserv.py"></node>
+    <node pkg="robot" name="pathPlaner" type="pathplanner.py"></node>
     <node pkg="robot" name="strat" type="strat.py"></node>
 </launch>
