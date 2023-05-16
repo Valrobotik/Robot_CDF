@@ -159,7 +159,7 @@ class position():
             #calcul de la consigne
             consigne.angular.z = self.pid_a(err_a)
             consigne.linear.x = self.pid_v(signe*math.sqrt(err_x**2 + err_y**2))
-
+            rospy.logdebug("consigne : " + str(consigne.linear.x) + " " + str(consigne.angular.z))
             self.pub.publish(consigne) #publication de la consigne
             rate.sleep() #attente de la boucle de publication à 50Hz
         
