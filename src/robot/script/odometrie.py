@@ -98,7 +98,7 @@ class odometrieProcess(Thread):
             self.__position[2] += w*dt
         else: #sinon on utilise la formule de deplacement en arc de cercle
             self.__position[0] += (v/w)*(math.sin(self.__position[2] + w*dt) - math.sin(self.__position[2]))# type: ignore
-            self.__position[1] += (v/w)*(math.cos(self.__position[2] + w*dt) - math.cos(self.__position[2])) # type: ignore
+            self.__position[1] += (v/w)*(math.cos(self.__position[2]) - math.cos(self.__position[2] + w*dt)) # type: ignore
             self.__position[2] += w*dt
         
         #on reduit l'angle entre 0 et 2pi
