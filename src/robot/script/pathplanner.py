@@ -43,4 +43,6 @@ class pathPlaner():
     def usCallback(self, msg):
         """traitement des données des capteurs ultrasons"""
         pass #TODO
-        
+
+path = pathPlaner()
+rospy.spin()
