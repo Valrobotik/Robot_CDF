@@ -1,61 +1,62 @@
 #!/usr/bin/env python
 from collections.abc import Callable, Iterable, Mapping
 from typing import Any
-import rospy # type: ignore
+import rospy
 import time
 import json
 from threading import Thread
 from robot.srv import encoders, encodersResponse # type: ignore
 from nav_msgs.msg import Odometry # type: ignore
-from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3# type: ignore
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 import tf # type: ignore
 import sys
 import math
 from tf.transformations import quaternion_from_euler # type: ignore
-from std_msgs.msg import Bool# type: ignore
+from std_msgs.msg import Bool
 from threading import Thread
 #lecture fichier de config
 
 class publisher_Tread(Thread):
-    """Thread chargé de publier les données de position estimée du robot"""
     def __init__(self):
         super().__init__()
-        self.rate = rospy.Rate(60) # 60Hz
-    
     def run(self):
         global message
         while not rospy.is_shutdown():
-            #boucle de publication
-            if message != None: #on verifie que les données sont disponibles
-                odomPub.publish(message) #publication des données de position estimée
-            self.rate.sleep()
+            rospy.sleep(0.01)
+            if message != None:
+                odomPub.publish(message)
+
+class position():
+    x :float = 0
+    y : float = 0
+    theta : float = 0
 
 class odometrieProcess(Thread):
     def __init__(self):
         super().__init__()
-        #initialisation des variables
         self.__d = 274.4
         self.__r = 32
         self.__tpr = 1000
         self.__lastTime = 0
         self.__currentTime = 0
         self.__localVelocity = [-1, -1] #(vx, w)
-        self.__lastlocalVelocity = [.0, .0]
-        self.__position = [.0, .0, .0] #(x, y, theta)
+        self.__lastlocalVelocity = [0, 0]
+        self.__position = position()
         self.__maxTicks = 65535
         self.__maxSafeTicks = 500
     
         self.__maxTicks_v = 2
         self.__maxTicks_a = 3
-
-        self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset) #initialisation du subscriber qui recupere le reset des noeuds du robot
+    
+        self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset)
         
     def reset(self, msg: Bool):
-        """en cas de reset des noeuds du robot, on reinitialise les variables"""
         if msg.data :
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
-            self.__position = [0, 0, 0] #(x, y, theta)
+            self.__position.x = 0
+            self.__position.y = 0
+            self.__position.theta = 0
             
     def run(self):
         dt = 0
@@ -75,58 +76,48 @@ class odometrieProcess(Thread):
                 self.__lastTime = self.__currentTime
                 
                 if(self.__localVelocity[0] == -1 and self.__localVelocity[1] == -1): self.__localVelocity = self.__lastlocalVelocity
-                if(self.__localVelocity[0] != -1  and self.__localVelocity[1] != -1):
-                    rospy.logdebug("dt = %f", dt)
-                    if dt > 0:
-                        #calcul des vitesses et de la position
-                        self.FigureSpeed(dt)
-                        #envoie des données pour la position estimée
-                        velocityPublisher(self.__position[0], self.__position[1], self.__position[2], 
-                                        self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
-                        
+                
+                if dt > 0:
+                    #calcul de la position à partir des vitesses lineaire et angulaire
+                    w = (self.__localVelocity[1]+self.__lastlocalVelocity[1])/2
+                    v = (self.__localVelocity[0]+self.__lastlocalVelocity[0])/2
+
+                    if abs(w) < 0.01:
+                        dx : float = v*dt*math.cos(self.__position.theta)
+                        dy : float = v*dt*math.sin(self.__position.theta)
+                    else:
+                        dx : float = (v/w)*(math.sin(self.__position.theta + w*dt) - math.sin(self.__position.theta))
+                        dy : float = (v/w)*(math.cos(self.__position.theta) - math.cos(self.__position.theta + w*dt))
+                    
+                    self.__position.x += dx
+                    self.__position.y += dy
+                    self.__position.theta = self.reduceAngle(self.__position.theta + w*dt)
+
+                    #envoie des données pour la position estimée
+                    prepare_velocity(self.__position, self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
+                    
                 self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
                 
-    def FigureSpeed(self, dt):
-        #calcul de la position à partir des vitesses lineaire et angulaire
-        w : float = self.__localVelocity[1] # on utiliseras la methode des trapezes pour intergrer la vitesse angulaire
-        v : float = self.__localVelocity[0] # on utiliseras la methode des trapezes pour intergrer la vitesse lineaire
-
-        #calcul de la position en cas de vitesse angulaire nulle
-        if abs(w) < 0.01: #lorque la vitesse angulaire est nulle on utilise une aproximtion du deplacement par des droites
-            self.__position[0] += v*dt*math.cos(self.__position[2])
-            self.__position[1] += v*dt*math.sin(self.__position[2])
-            self.__position[2] += w*dt
-        else: #sinon on utilise la formule de deplacement en arc de cercle
-            self.__position[0] += (v/w)*(math.sin(self.__position[2] + w*dt) - math.sin(self.__position[2]))# type: ignore
-            self.__position[1] += (v/w)*(math.cos(self.__position[2]) - math.cos(self.__position[2] + w*dt)) # type: ignore
-            self.__position[2] += w*dt
-        
-        #on reduit l'angle entre 0 et 2pi
-        self.__position[2] = self.reduceAngle(self.__position[2])# type: ignore
-        
-    
     def reduceAngle(self, x): 
-        """reduit l'angle entre 0 et 2pi"""
         a = math.fmod(x, 2*math.pi)
         return a
        
-def velocityPublisher(x, y, th, v, w, t):
-    """preparation de la trame de position"""
+def prepare_velocity(pos : position, v:float, w:float, t:rospy.Time):
     global message
-    odomQuat = quaternion_from_euler(0, 0, th)
+    odomQuat = quaternion_from_euler(0, 0, pos.theta)
 
     message = Odometry()
     message.header.stamp = t
     message.header.frame_id = "odom"
-    message.pose.pose = Pose(Point(x, y, 0), Quaternion(*odomQuat))
+    message.pose.pose = Pose(Point(pos.x, pos.y, 0), Quaternion(*odomQuat))
     message.child_frame_id = "base_link"
-    vx = v*math.cos(th)
-    vy = v*math.sin(th)
+    vx = v*math.cos(pos.theta)
+    vy = v*math.sin(pos.theta)
     message.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, w))
+    #print(message)
     pass
 
 def encoders_client():
-    """recuperation des données des encodeurs"""
     rospy.wait_for_service('encoders')
     get_encoders = rospy.ServiceProxy('encoders', encoders)
     cmd = 1
