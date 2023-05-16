@@ -17,18 +17,23 @@ from threading import Thread
 #lecture fichier de config
 
 class publisher_Tread(Thread):
+    """Thread chargé de publier les données de position estimée du robot"""
     def __init__(self):
         super().__init__()
+        self.rate = rospy.Rate(60) # 60Hz
+    
     def run(self):
         global message
         while not rospy.is_shutdown():
-            rospy.sleep(0.01)
-            if message != None:
-                odomPub.publish(message)
+            #boucle de publication
+            if message != None: #on verifie que les données sont disponibles
+                odomPub.publish(message) #publication des données de position estimée
+            self.rate.sleep()
 
 class odometrieProcess(Thread):
     def __init__(self):
         super().__init__()
+        #initialisation des variables
         self.__d = 274.4
         self.__r = 32
         self.__tpr = 1000
@@ -42,10 +47,11 @@ class odometrieProcess(Thread):
     
         self.__maxTicks_v = 2
         self.__maxTicks_a = 3
-    
-        self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset)
+
+        self.__getreset = rospy.Subscriber("reset_all", Bool, self.reset) #initialisation du subscriber qui recupere le reset des noeuds du robot
         
     def reset(self, msg: Bool):
+        """en cas de reset des noeuds du robot, on reinitialise les variables"""
         if msg.data :
             self.__lastTime = rospy.Time.now()
             self.__currentTime = rospy.Time.now()
@@ -86,23 +92,26 @@ class odometrieProcess(Thread):
         v : float = (self.__localVelocity[0]+self.__lastlocalVelocity[0])/2 # on utiliseras la methode des trapezes pour intergrer la vitesse lineaire
 
         #calcul de la position en cas de vitesse angulaire nulle
-        if abs(w) < 0.01:
+        if abs(w) < 0.01: #lorque la vitesse angulaire est nulle on utilise une aproximtion du deplacement par des droites
             self.__position[0] += v*dt*math.cos(self.__position[2])
             self.__position[1] += v*dt*math.sin(self.__position[2])
             self.__position[2] += w*dt
-        else:
+        else: #sinon on utilise la formule de deplacement en arc de cercle
             self.__position[0] += (v/w)*(math.sin(self.__position[2] + w*dt) - math.sin(self.__position[2]))# type: ignore
             self.__position[1] += (v/w)*(math.cos(self.__position[2] + w*dt) + math.cos(self.__position[2])) # type: ignore
             self.__position[2] += w*dt
         
+        #on reduit l'angle entre 0 et 2pi
         self.__position[2] = self.reduceAngle(self.__position[2])# type: ignore
         
     
     def reduceAngle(self, x): 
+        """reduit l'angle entre 0 et 2pi"""
         a = math.fmod(x, 2*math.pi)
         return a
        
 def velocityPublisher(x, y, th, v, w, t):
+    """preparation de la trame de position"""
     global message
     odomQuat = quaternion_from_euler(0, 0, th)
 
@@ -114,10 +123,10 @@ def velocityPublisher(x, y, th, v, w, t):
     vx = v*math.cos(th)
     vy = v*math.sin(th)
     message.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, w))
-    #print(message)
     pass
 
 def encoders_client():
+    """recuperation des données des encodeurs"""
     rospy.wait_for_service('encoders')
     get_encoders = rospy.ServiceProxy('encoders', encoders)
     cmd = 1
