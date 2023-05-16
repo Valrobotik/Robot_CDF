@@ -22,8 +22,8 @@ class position():
         self.__kdv = 0
         
         #constantes du PID angulaire
-        self.__kpa = 2
-        self.__kia = 0.01
+        self.__kpa = 3
+        self.__kia = 0.1
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
@@ -95,22 +95,20 @@ class position():
         
     def rotation(self, angle):
         """rotation du robot vers l'angle voulu (position absolue en radian)"""
-
-        #initialisation de la consigne
         consigne = Twist()
         consigne.linear.x = 0
         consigne.linear.y = 0
         consigne.angular.z = 3
         self.__integral_a = 0
-        self.__previous_error_a  = self.mod_2pi(angle - self.a)
+        self.__previous_error_a  = angle - self.a
         previous_time = time.time()
-        while abs(self.mod_2pi(angle - self.a)) > self.error_a and self.__action:
-            #boucle d'asservissement
+        while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
             previous_time = time.time()
-            consigne.angular.x = self.pid_a(self.mod_2pi(angle - self.a)) #calcul de la consigne angulaire
-            self.pub.publish(consigne) #publication de la consigne
-            #rospy.sleep(1/self.__freq_aserv) #attente de la frequence d'asservissement
+            consigne.angular.x = self.pid_a(angle - self.a)
+            self.pub.publish(consigne)
+            rospy.sleep(0.02)
+        self.stop()
     
     def translation(self, x, y):
         """deplacement du robot vers le point voulu (position absolue (x,y) en m)"""
@@ -120,42 +118,18 @@ class position():
         consigne.angular.z = 3
         previous_time = time.time()
         while (abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l) and self.__action:
-            #boucle d'asservissement
-            self.__dt = time.time() - previous_time
+            consigne = Twist()
+            consigne.linear.y = 0
+            consigne.angular.z = 3
             previous_time = time.time()
-
-            #calcul des erreur en x et y
-            err_x = x - self.x
-            err_y = y - self.y
-            
-            abs_x = abs(err_x)
-            abs_y = abs(err_y)
-            angle = 0
-
-            #calcul de l'angle a atteindre en fonction de la position du point
-            if err_x > 0.001 and err_y > 0:
-                angle = math.atan2(abs_y,abs_x)
-            elif err_x > 0.001 and err_y < 0:
-                angle = -math.atan2(abs_y,abs_x)
-            elif err_x < -0.001 and err_y > 0:
-                angle = math.pi - math.atan2(abs_y,abs_x)
-            elif err_x < -0.001 and err_y < 0:
-                angle = math.pi + math.atan2(abs_y,abs_x)
-            elif err_x > 0:
-                angle = math.pi/2
-            elif err_x < 0:
-                angle = -math.pi/2
-            angle = self.mod_2pi(angle)
-            err_a = self.mod_2pi(angle - self.a)
-            rospy.logdebug("angle : " + str(angle) + " err_a : " + str(err_a))
-            #on verifie que l'angle a atteindre n'est pas trop grand (sinon on fais marche arriere)
-            
-
-            #calcul de la consigne
-            consigne.angular.z = self.pid_a(err_a)
-            consigne.linear.x = self.pid_v(math.sqrt(err_x**2 + err_y**2))
-            self.pub.publish(consigne) #publication de la consigne
-            rospy.sleep(0.02) #attente de la boucle de publication à 50Hz
+            while abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l:
+                self.__dt = time.time() - previous_time
+                previous_time = time.time()
+                consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
+                consigne.angular.x = self.pid_a(self.mod_2pi(math.atan2(y - self.y, x - self.x)-self.a))
+                self.pub.publish(consigne)
+                rospy.sleep(0.02)
+            self.stop()
         
     def mod_2pi(self, angle):
         """fonction qui ramene un angle entre -pi et pi"""
