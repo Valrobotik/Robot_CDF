@@ -152,7 +152,7 @@ class position():
             #on verifie que l'angle a atteindre n'est pas trop grand (sinon on fais marche arriere)
             if abs(err_a) > math.pi/2:
                 err_a = self.mod_2pi(err_a + math.pi)
-                signe = -1
+                signe = 1
             else:
                 signe = 1
             
