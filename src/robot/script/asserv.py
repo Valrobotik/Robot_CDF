@@ -243,7 +243,7 @@ class position():
         self.rotation(angle)
         #on avance jusqu'au point voulu
         #rospy.logdebug("go distance : %f", math.sqrt(err_x**2 + err_y**2))
-        self.translation(self.go_x, self.go_y)
+        #self.translation(self.go_x, self.go_y)
         if self.go_a != None: #si on a une orientation final a atteindre on l'atteint
             self.rotation(self.go_a)
         self.stop()
