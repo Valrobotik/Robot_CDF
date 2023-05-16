@@ -77,10 +77,8 @@ robot = Match() #initialisation du match
 
 def match():
     """code du match à ecrire ici"""
-    robot.go(1, 1, 0) #exemple de commande de controle du robot
-    rospy.sleep(9)
-    robot.go(1, 1, 0) #exemple de commande de controle du robot
-    rospy.sleep(9)
+    robot.go(0, 0, 0) #exemple de commande de controle du robot
+    rospy.sleep(0.01)
 
 
 
