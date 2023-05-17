@@ -93,15 +93,18 @@ class odometrieProcess(Thread):
                     self.__position.x += dx
                     self.__position.y += dy
                     self.__position.theta += w*dt
-                    
+                    self.__position.theta = self.reduceAngle(self.__position.theta)
+
                     #envoie des données pour la position estimée
                     prepare_velocity(self.__position, self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
                     
                 self.__lastlocalVelocity = self.__localVelocity #on enregistre les anciennes valeurs de vitesse 
                 
     def reduceAngle(self, x): 
-        a = math.fmod(x, 2*math.pi)
-        return a
+        x = x % (2 * math.pi)  
+        if x > math.pi: 
+            x -= 2 * math.pi 
+        return x
        
 def prepare_velocity(pos : position, v:float, w:float, t:rospy.Time):
     """Prepare the velocity message to be published"""
