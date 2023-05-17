@@ -93,7 +93,7 @@ class position():
             previous_time = time.time()
             self.pub.publish(consigne)
             consigne.angular.x = self.pid_a(angle - self.a)
-            rospy.sleep(0.02)
+            rospy.sleep(0.05)
         self.stop()
     
     def translation(self, x, y):
@@ -107,7 +107,7 @@ class position():
             consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
             consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
             self.pub.publish(consigne)
-            rospy.sleep(0.02)
+            rospy.sleep(0.05)
         self.stop()
         
     def pid_v(self, erreur):
