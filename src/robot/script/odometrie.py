@@ -69,8 +69,9 @@ class odometrieProcess():
               
     def FigureSpeed(self, dt):
         #calcul de la position à partir des vitesses lineaire et angulaire
-        w = self.__localVelocity[1]
-        v = self.__localVelocity[0]
+        w = (self.__localVelocity[1]+self.__localVelocity[1])/2
+        v = (self.__localVelocity[0]+self.__localVelocity[0])/2
+        
         vx = v*math.cos(self.__position[2])
         vy = v*math.sin(self.__position[2])
         
