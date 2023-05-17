@@ -365,3 +365,4 @@ src/robot_localization/test/stat_recorder.sh
 src/robot_localization/doc/CHANGELOG.rst
 src/robot_localization/test/record_all_stats.sh
 src/robot_localization/test/stat_recorder.sh
+.vscode/settings.json
