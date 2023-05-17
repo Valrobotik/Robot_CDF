@@ -26,7 +26,7 @@ class position():
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
         self.error_l = 0.01
-        self.error_a = 0.01
+        self.error_a = 0.04
         
         #variables du PID lineaire
         self.__integral_v = 0
