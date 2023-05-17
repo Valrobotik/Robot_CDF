@@ -1,37 +1,32 @@
 #!/usr/bin/env python
 #asservicement en position du robot
 
-import rospy# type: ignore
+import rospy
 import time
 from nav_msgs.msg import Odometry # type: ignore
-from geometry_msgs.msg import Twist, Vector3# type: ignore
+from geometry_msgs.msg import Twist, Vector3
 import math
-from std_msgs.msg import Bool# type: ignore
+from std_msgs.msg import Bool
 from tf.transformations import euler_from_quaternion, quaternion_from_euler # type: ignore
 
 class position():
     def __init__(self) -> None:
-        """initialisation du noeud asservissement"""
-
-        #initialisation du noeud
+        
         rospy.init_node("asserv", log_level=rospy.DEBUG)
         
         #constantes du PID lineaire
-        self.__kpv = 0.6
-        self.__kiv = 0.00001
+        self.__kpv = 1
+        self.__kiv = 0.001
         self.__kdv = 0
         
         #constantes du PID angulaire
         self.__kpa = 3
-        self.__kia = 0.1
+        self.__kia = 0.01
         self.__kda = 0
         
         #erreurs lineaire et angulaire tolerees pour la fin du PID
-        self.error_l = 0.01
+        self.error_l = 0.1
         self.error_a = 0.01
-
-        #frequence d'asservissement
-        self.__freq_aserv = 50
         
         #variables du PID lineaire
         self.__integral_v = 0
@@ -42,59 +37,46 @@ class position():
         
         self.__dt = 0
         
-        #etat du robot
-        self.__action = True
+        self.__action = False
         
         #position du robot
         self.x = 0
         self.y = 0
         self.a = 0
         
-        #consigne du robot
-        self.go_a = 0
-        self.go_x = 0
-        self.go_y = 0
-        
-        self.__list_ordre = []
-
-        #initialisation des subscribers et publishers
+        #rospy.Subscriber("/odometry/filtered", Odometry, self.odom)
         rospy.Subscriber("/Odom", Odometry, self.odom)
         self.pub = rospy.Publisher("robot_consign", Twist, queue_size=10)
         rospy.Subscriber("go", Vector3, self.go)
         rospy.Subscriber("reset_all", Bool, self.reset)
-        rospy.Subscriber("break", Bool, self.break_)
-   
+    
     def reset(self, rep:Bool):
-        """reset des variables du PID"""
         if rep.data:
             self.__integral_v = 0
             self.__integral_a = 0  
             self.__previous_error_v = 0
             self.__previous_error_a = 0
             self.__dt = 0
-            self.__action = True
+            self.__action = False
             
             #position du robot
             self.x = 0
             self.y = 0
             self.a = 0
-
-    def break_(self, rep:Bool):
-        """arret du robot"""
-        if rep.data:
-            self.__list_ordre = []
-            self.__action = False
             
+            self.go_a = 0
+            self.go_x = 0
+            self.go_y = 0
+        
+    
     def odom(self, rep):
-        """recuperation de la position du robot"""
         self.x = rep.pose.pose.position.x
         self.y = rep.pose.pose.position.y
         (roll, pitch, yaw) = euler_from_quaternion([rep.pose.pose.orientation.x, rep.pose.pose.orientation.y, rep.pose.pose.orientation.z, rep.pose.pose.orientation.w])
-        self.a = self.mod_2pi(yaw) 
-        rospy.logdebug("x = %fm, y = %fm, a = %f°", self.x, self.y, self.a*180/math.pi)
+        self.a = yaw
+        rospy.logdebug("x = %f, y = %f, a = %f", self.x, self.y, self.a)
         
     def rotation(self, angle):
-        """rotation du robot vers l'angle voulu (position absolue en radian)"""
         consigne = Twist()
         consigne.linear.x = 0
         consigne.linear.y = 0
@@ -104,142 +86,67 @@ class position():
         previous_time = time.time()
         while abs(self.a - angle) > self.error_a:
             self.__dt = time.time() - previous_time
-            previous_time = time.time()
-            consigne.angular.x = self.pid_a(angle - self.a)
             self.pub.publish(consigne)
-            rospy.sleep(0.02)
+            consigne.angular.x = self.pid_a(angle - self.a)
+            rospy.sleep(0.05)
         self.stop()
     
     def translation(self, x, y):
-        """deplacement du robot vers le point voulu (position absolue (x,y) en m)"""
-        #initialisation de la consigne
         consigne = Twist()
         consigne.linear.y = 0
         consigne.angular.z = 3
         previous_time = time.time()
-        while (abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l) and self.__action:
-            consigne = Twist()
-            consigne.linear.y = 0
-            consigne.angular.z = 3
-            previous_time = time.time()
-            while abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l:
-                self.__dt = time.time() - previous_time
-                previous_time = time.time()
-                consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
-                err_angle = math.atan2(y - self.y, x - self.x) - self.a
-                consigne.angular.x = self.pid_a(self.mod_2pi(err_angle))
-                self.pub.publish(consigne)
-                rospy.sleep(0.02)
-            self.stop()
-        
-    def mod_2pi(self, angle):
-        """fonction qui ramene un angle entre -pi et pi"""
-        while angle > math.pi:
-            angle -= 2*math.pi
-        while angle < -math.pi:
-            angle += 2*math.pi
-        return(angle)
+        while abs(self.x - x) > self.error_l or abs(self.y - y) > self.error_l:
+            self.__dt = time.time() - previous_time
+            consigne.linear.x = self.pid_v((x - self.x)**2 + (y - self.y)**2)
+            if consigne.linear.x > 0.8: consigne.linear.x = 0.8
+            consigne.angular.x = self.pid_a(math.atan2(y - self.y, x - self.x)-self.a)
+            self.pub.publish(consigne)
+            rospy.sleep(0.1)
+        self.stop()
         
     def pid_v(self, erreur):
-        """PID en vitesse"""
-        # the integral term of the PID
-        temp_integral = self.__integral_v
-        self.__integral_v += erreur*self.__dt*self.__kiv
-        # the proportional term of the PID
-        self.__proportional_v = self.__kpv*erreur
-        # the derivative term of the PID
-        self.__derivative_v = self.__kdv*(erreur - self.__previous_error_v)/self.__dt
+        self.__integral_v += erreur*self.__dt
+        if self.__integral_v > 0.2: self.__integral_v = 0.2
+        self.__derivative_v = (erreur - self.__previous_error_v)/self.__dt
         self.__previous_error_v = erreur
-        # the final PID command
-        comande = self.__proportional_v + self.__integral_v + self.__derivative_v
-        # saturation with anti windup
-        if comande > 0.8:
-            comande = 0.8
-            self.__integral_v = temp_integral
-        elif comande < -0.8:
-            comande = -0.8
-            self.__integral_v = temp_integral
-        return(comande)
-
+        return(self.__kpv*erreur + self.__kiv*self.__integral_v + self.__kdv*self.__derivative_v)
+    
     def pid_a(self, erreur):
-        """PID en angle"""
-        #terme integral du PID
-        temp_integral_a = self.__integral_a
+        temp_integral = self.__integral_a
         self.__integral_a += erreur*self.__dt*self.__kia
-        #terme proportionnel du PID
         self.__proportional_a = self.__kpa*erreur
         self.__derivative_a = self.__kda*(erreur - self.__previous_error_a)/self.__dt
         self.__previous_error_a = erreur
-        #comande finale du PID
         comande = self.__proportional_a + self.__integral_a + self.__derivative_a
         #saturation avec anti windup
         if comande > 1:
             comande = 1
-            self.__integral_a = temp_integral_a
+            self.__integral_a = temp_integral
         elif comande < -1:
             comande = -1
-            self.__integral_a = temp_integral_a
+            self.__integral_a = temp_integral
         return(comande)
     
     def stop(self):
-        """arret du robot"""
         consigne = Twist()
         consigne.linear.x = 0
         consigne.linear.y = 0
         consigne.angular.z = 0
-        self.pub.publish(consigne) #publication de la consigne
+        self.pub.publish(consigne)
+        rospy.sleep(0.1)
     
     def go_to(self):
-        """on se deplace vers le point voulu (position relative (x,y, theta) en m x m x rad)"""
-        #calcule de l'angle a atteindre en fonction de la position du point voulu
-        #on cherche à pouvoir se deplacer en ligne droite
-        err_x = self.go_x - self.x
-        err_y = self.go_y - self.y
-        abs_x = abs(err_x)
-        abs_y = abs(err_y)
-        angle = 0
-        if err_x > 0.001 and err_y > 0:
-            angle = math.atan2(abs_y,abs_x)
-        elif err_x > 0.001 and err_y < 0:
-            angle = -math.atan2(abs_y,abs_x)
-        elif err_x < -0.001 and err_y > 0:
-            angle = math.pi - math.atan2(abs_y,abs_x)
-        elif err_x < -0.001 and err_y < 0:
-            angle = math.pi + math.atan2(abs_y,abs_x)
-        elif err_y > 0:
-            angle = math.pi/2
-        elif err_y < 0:
-            angle = -math.pi/2
-        angle = self.mod_2pi(angle)
-
-        #on initialise une rotation pour se mettre dans la bonne direction
-        #rospy.logdebug("go angle : %f", angle)
-        #self.rotation(angle)
-        #on avance jusqu'au point voulu
-        #rospy.logdebug("go distance : %f", math.sqrt(err_x**2 + err_y**2))
-        #self.translation(self.go_x, self.go_y)
-        if self.go_a != None: #si on a une orientation final a atteindre on l'atteint
+        while not rospy.is_shutdown():
+            #self.rotation(math.atan2(y, x))
             self.rotation(self.go_a)
-        self.stop()
+            #self.translation(x, y)
 
     def go(self, rep):
-        """on reçoit un ordre de deplacement (position relative (x,y, theta) en m x m x rad) via le topic /go_to"""
-        while not self.__action: pass #on attend en cas de break que l'action ai a nouveau le droit d'etre effectuee (pour eviter les conflits)
-        self.__list_ordre.append(rep) #on ajoute l'ordre a la liste
-    
-    def go_to_list(self):
-        """on se deplace vers les points de la liste successivement"""
-        while not rospy.is_shutdown():
-            if len(self.__list_ordre) > 0: #si il y a des ordres dans la liste on les execute
-                self.go_x = self.__list_ordre[0].x
-                self.go_y = self.__list_ordre[0].y
-                self.go_a = self.__list_ordre[0].z
-                self.go_to() #on se deplace vers le point
-                self.__list_ordre.pop(0) #on supprime l'ordre de la liste
-            else: #sinon on s'arrete
-                self.stop() #on s'arrete
-                self.__action = True #on autorise les nouvelles actions dans le cas d'un break
-                
+        self.go_x = rep.x
+        self.go_y = rep.y
+        self.go_a = rep.z
+
 pos = position()
-pos.go_to_list()
+pos.go_to()
 rospy.spin()
