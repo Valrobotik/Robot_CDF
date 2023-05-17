@@ -39,7 +39,7 @@ class getVitThread(Thread):
             while self.__serial.in_waiting == 0 and timeout<time.time(): #tant que la reponse n'est pas recu on attend
                 pass
             if self.__serial.in_waiting != 0: #si le timeout n'est pas depasse
-                rospy.sleep(0.005) #attente de la reponse
+                rospy.sleep(0.002) #attente de la reponse
                 x = self.__serial.readline()#lecture de la reponse
                 x = x.decode('utf8') 
                 rospy.logdebug("reponse : %s", x) #affichage de la reponse
@@ -190,7 +190,7 @@ sendgcode = sendGcodeThread(ser)
 sendgcode.start()
 
 #lancement du noeud ROS : serialCon
-rospy.init_node('serialCon', log_level=rospy.DEBUG)
+rospy.init_node('serialCon', log_level=rospy.WARN)
 rospy.logdebug("serialCon started")
 
 # lancement des threads
