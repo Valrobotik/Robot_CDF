@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/src/robot"
+    "cmake.sourceDirectory": "${workspaceFolder}/src/robot",
+    "cmake.configureOnOpen": false
 }
