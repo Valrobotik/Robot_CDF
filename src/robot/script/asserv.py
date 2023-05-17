@@ -90,8 +90,8 @@ class position():
         self.x = rep.pose.pose.position.x
         self.y = rep.pose.pose.position.y
         (roll, pitch, yaw) = euler_from_quaternion([rep.pose.pose.orientation.x, rep.pose.pose.orientation.y, rep.pose.pose.orientation.z, rep.pose.pose.orientation.w])
-        self.a = yaw #angle entre -pi et pi
-        rospy.logdebug("x = %f, y = %f, a = %f", self.x, self.y, self.a)
+        self.a = self.mod_2pi(yaw) 
+        rospy.logdebug("x = %f, y = %f, a = %f", self.x, self.y, self.a*180/math.pi)
         
     def rotation(self, angle):
         """rotation du robot vers l'angle voulu (position absolue en radian)"""
@@ -126,7 +126,8 @@ class position():
                 self.__dt = time.time() - previous_time
                 previous_time = time.time()
                 consigne.linear.x = self.pid_v(math.sqrt((x - self.x)**2 + (y - self.y)**2))
-                consigne.angular.x = self.pid_a(self.mod_2pi(math.atan2(y - self.y, x - self.x)-self.a))
+                err_angle = math.atan2(y - self.y, x - self.x) - self.a
+                consigne.angular.x = self.pid_a(self.mod_2pi(err_angle))
                 self.pub.publish(consigne)
                 rospy.sleep(0.02)
             self.stop()
