@@ -42,6 +42,7 @@ class getVitThread(Thread):
                 rospy.sleep(0.005) #attente de la reponse
                 x = self.__serial.readline()#lecture de la reponse
                 x = x.decode('utf8') 
+                rospy.logdebug("reponse : %s", x) #affichage de la reponse
                 data = x.replace('R=(', '').replace(')', '').split(';') #traitement de la reponse
                 if len(data) == 2: #si la reponse est correcte
                     try : 
@@ -152,7 +153,7 @@ class MotSerial(serial.Serial):
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
-                rospy.sleep(0.008) #on attend 20ms
+                rospy.sleep(0.004) #on attend 20ms
 
 class sendGcodeThread(Thread):
     def __init__(self, serial):
@@ -188,7 +189,7 @@ sendgcode = sendGcodeThread(ser)
 sendgcode.start()
 
 #lancement du noeud ROS : serialCon
-rospy.init_node('serialCon', log_level=rospy.WARN)
+rospy.init_node('serialCon', log_level=rospy.DEBUG)
 rospy.logdebug("serialCon started")
 
 # lancement des threads
