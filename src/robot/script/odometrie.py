@@ -23,7 +23,7 @@ class publisher_Tread(Thread):
     def run(self):
         global message
         while not rospy.is_shutdown():
-            if message != None:
+            if message.header.stamp != 0:
                 odomPub.publish(message)
             self.rate.sleep()
 
