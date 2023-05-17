@@ -92,8 +92,8 @@ class odometrieProcess(Thread):
                     
                     self.__position.x += dx
                     self.__position.y += dy
-                    self.__position.theta = self.reduceAngle(self.__position.theta + w*dt)
-
+                    self.__position.theta += w*dt
+                    
                     #envoie des données pour la position estimée
                     prepare_velocity(self.__position, self.__localVelocity[0], self.__localVelocity[1], self.__currentTime)
                     
