@@ -54,7 +54,8 @@ class getVitThread(Thread):
                     except ValueError:
                         rospy.logwarn("erreur de lecture des encodeurs : %s", x) #affichage d'une erreur
                         pass
-            
+            else:
+                rospy.logdebug("pas de reponse")
 
     def handle_encoders(self, req):
         #on renvoie le position du client
@@ -153,7 +154,7 @@ class MotSerial(serial.Serial):
                 rospy.loginfo("comande out : " + gcode) #on affiche la commande
                 sended = True #on met l'etat de l'envoie a fait
                 self.setUnbusy()# on debloque le port
-                rospy.sleep(0.004) #on attend 20ms
+                rospy.sleep(0.002) #on attend 20ms
 
 class sendGcodeThread(Thread):
     def __init__(self, serial):
